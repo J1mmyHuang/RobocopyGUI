@@ -18,6 +18,7 @@
 ## 系统要求与 Robocopy
 
 - 需要 Windows 10 或 Windows 11，以及系统自带的 `robocopy.exe`。
+- 运行发布版 EXE 需要安装 [.NET 8 Windows Desktop Runtime（x64）](https://dotnet.microsoft.com/download/dotnet/8.0)；当前发布为单文件、框架依赖版本。
 - 本项目仅调用用户电脑中已有的 `robocopy.exe`，不包含、不复制、也不分发 Robocopy 或其他 Windows 系统组件。
 - Robocopy 及 Windows 系统组件的权利归 Microsoft 所有，并适用其各自的许可条款。
 
@@ -38,6 +39,8 @@ Set-ExecutionPolicy -Scope Process Bypass
 dotnet build .\RobocopyGUI.csproj -c Release
 ``` 
 
+> 当前项目目标框架为 `.NET 8`（`net8.0-windows`）。如需发布无需安装 .NET Runtime 的版本，可在发布时改为自包含模式；代价是 EXE 文件体积会增大。
+
 ## 使用说明
 
 1. 选择源文件夹和目标文件夹。
@@ -49,6 +52,14 @@ dotnet build .\RobocopyGUI.csproj -c Release
 ## 发布版本
 
 可执行文件不放在源代码目录中，而是作为 GitHub Release 附件发布。下载程序请前往仓库的 [Releases 页面](https://github.com/J1mmyHuang/RobocopyGui/releases)。
+
+## 后续计划
+
+以下为计划中的改进方向，具体实现会根据实际需求与开发进度调整：
+
+- 构建更现代、更完善的 UI 界面；
+- 支持明暗模式手动切换，或跟随 Windows 系统主题自动切换；
+- 支持中文与英文界面切换。
 
 ## 字体致谢
 
