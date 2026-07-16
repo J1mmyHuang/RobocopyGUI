@@ -1,4 +1,4 @@
-# RobocopyGui
+# RobocopyGUI
 
 一个面向 Windows 的 Robocopy 图形化工具，提供分步骤操作、真实文件进度显示，以及可选的文件哈希校验功能，适合重要文件复制后的完整性确认。
 
