@@ -1,60 +1,57 @@
-# Robocopy 复制与完整性校验
+# RobocopyGui
 
-一个 Windows 图形化文件复制工具，使用系统自带的 Robocopy，并支持复制完成后的 MD5、SHA-1、SHA-256、SHA-512 校验。
+一个面向 Windows 的 Robocopy 图形化工具，提供分步骤操作、真实文件进度显示，以及可选的文件哈希校验功能，适合重要文件复制后的完整性确认。
 
 ## 功能
 
-- 分步骤向导：路径、扫描、复制、校验、报告
-- 基于实际字节数的复制进度与哈希读取进度
-- 校验任务在后台执行，支持中途停止
-- 详细日志区域可折叠，手动滚动日志时不会被强制拉回底部
-- 异常文件显示和完整 CSV 报告导出
+- 分步骤向导：路径选择、扫描、复制、校验和报告
+- 基于实际字节数的复制进度
+- 基于实际读取字节数的哈希校验进度
+- 支持 MD5、SHA-1、SHA-256 和 SHA-512
+- 哈希校验在后台执行，界面不会因校验任务卡住
+- 支持中途停止复制或校验
+- 详细文件日志区域可以折叠
+- 手动查看历史日志时不会被自动滚动拉回底部
+- 显示异常文件，并支持导出 CSV 报告
 - 深色界面，默认使用得意黑（Smiley Sans）字体
 
 ## 构建
 
-需要 Windows、.NET 8 SDK 和系统自带的 Robocopy。进入本目录后执行：
+需要 Windows、.NET 8 SDK 和系统自带的 Robocopy。进入源代码目录后执行：
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\build.ps1
 ```
 
-输出文件位于 `publish\RobocopyGui.exe`。如果只希望生成框架依赖版本，也可以直接执行：
+编译结果位于 `publish\RobocopyGui.exe`。
+
+如果只需要生成框架依赖版本，也可以执行：
 
 ```powershell
 dotnet build .\RobocopyGui.csproj -c Release
-```
+``` 
 
-## 发布到 GitHub
+## 使用说明
 
-### 方式一：网页操作
+1. 选择源文件夹和目标文件夹。
+2. 扫描文件并确认待复制内容。
+3. 执行复制，观察真实字节进度。
+4. 按需开启哈希校验，并选择校验算法。
+5. 查看结果，必要时导出 CSV 报告。
 
-1. 登录 GitHub，点击右上角 `+` → `New repository`。
-2. 仓库名可以填写 `RobocopyGui`，选择 `Public`。
-3. 建议不要勾选自动创建 README、License 或 `.gitignore`，因为本项目已经提供这些文件。
-4. 创建仓库后，点击 `uploading an existing file`，把本目录中的文件上传。
-5. 将 `RobocopyGui.exe` 作为 Release 附件上传，不建议把编译产物直接混在源代码目录中。
+## 发布版本
 
-### 方式二：使用 Git 命令
+可执行文件不放在源代码目录中，而是作为 GitHub Release 附件发布。下载程序请前往仓库的 [Releases 页面](https://github.com/J1mmyHuang/RobocopyGui/releases)。
 
-先在 GitHub 创建一个空的 Public 仓库，然后在本目录打开 PowerShell：
+## 字体致谢
 
-```powershell
-git init
-git add .
-git commit -m "Initial open-source release"
-git branch -M main
-git remote add origin https://github.com/YOUR_NAME/RobocopyGui.git
-git push -u origin main
-```
+本项目界面使用 [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans) 字体。字体项目由 atelier-anchor 维护，并依据 [SIL Open Font License 1.1](https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE) 发布。感谢字体作者和贡献者提供这款优秀的开源字体。
 
-把 `YOUR_NAME/RobocopyGui` 替换成你自己的 GitHub 用户名和仓库名。第一次推送时，GitHub 会要求登录或使用 Personal Access Token。
+## 开发致谢
 
-## 发布 EXE
-
-建议在 GitHub 仓库页面依次点击 `Releases` → `Draft a new release`，创建版本标签，例如 `v1.0.0`，然后把 `RobocopyGui.exe` 上传为附件。这样源代码和可下载程序会分开管理。
+本项目的界面设计、功能实现和文档整理过程中使用了 [ChatGPT Codex](https://openai.com/codex/) 的协助。最终代码、构建结果和公开发布内容由项目维护者审阅并负责。
 
 ## 许可证
 
-本项目使用 MIT License，详见 `LICENSE`。
+本项目使用 MIT License，详见 [LICENSE](LICENSE) 文件。
