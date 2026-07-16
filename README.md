@@ -60,4 +60,6 @@ dotnet build .\RobocopyGUI.csproj -c Release
 
 ## 许可证
 
-本项目使用 MIT License，详见 [LICENSE](LICENSE) 文件。
+本项目采用 [Mozilla Public License 2.0 (MPL-2.0)](LICENSE)。
+
+当你发布对本项目现有源代码文件的修改，或发布包含这些文件的可执行程序时，需保留 MPL-2.0 许可与版权声明，并以合理方式提供相应源代码。MPL-2.0 为按文件适用的弱著佐权许可证：它允许与独立文件组成更大的作品；但本项目受 MPL 覆盖的源代码文件及其修改仍须遵守 MPL-2.0。
