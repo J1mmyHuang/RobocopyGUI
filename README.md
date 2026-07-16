@@ -24,12 +24,12 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\build.ps1
 ```
 
-编译结果位于 `publish\RobocopyGui.exe`。
+编译结果位于 `publish\RobocopyGUI.exe`。
 
 如果只需要生成框架依赖版本，也可以执行：
 
 ```powershell
-dotnet build .\RobocopyGui.csproj -c Release
+dotnet build .\RobocopyGUI.csproj -c Release
 ``` 
 
 ## 使用说明
