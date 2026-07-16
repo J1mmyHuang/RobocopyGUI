@@ -15,6 +15,12 @@
 - 显示异常文件，并支持导出 CSV 报告
 - 深色界面，默认使用得意黑（Smiley Sans）字体
 
+## 系统要求与 Robocopy
+
+- 需要 Windows 10 或 Windows 11，以及系统自带的 `robocopy.exe`。
+- 本项目仅调用用户电脑中已有的 `robocopy.exe`，不包含、不复制、也不分发 Robocopy 或其他 Windows 系统组件。
+- Robocopy 及 Windows 系统组件的权利归 Microsoft 所有，并适用其各自的许可条款。
+
 ## 构建
 
 需要 Windows、.NET 8 SDK 和系统自带的 Robocopy。进入源代码目录后执行：
