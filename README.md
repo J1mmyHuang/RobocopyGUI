@@ -75,4 +75,6 @@ dotnet build .\RobocopyGUI.csproj -c Release
 
 ## Star 历史
 
-[![Star History Chart](https://starchart.cc/J1mmyHuang/RobocopyGUI.svg?variant=adaptive)](https://starchart.cc/J1mmyHuang/RobocopyGUI)
+![RobocopyGUI Star 历史](assets/star-history.svg)
+
+图表由本仓库的 GitHub Actions 每天自动更新，不依赖第三方 Star 图表服务。
