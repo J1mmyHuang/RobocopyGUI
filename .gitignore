@@ -1,7 +1,18 @@
+# Build output and local editor state
 bin/
 obj/
-publish/
+node_modules/
 .vs/
+.idea/
+publish/
 *.user
 *.suo
 *.pdb
+
+# Local secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+auth.json
+credentials.json
