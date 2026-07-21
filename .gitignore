@@ -16,3 +16,9 @@ publish/
 *.key
 auth.json
 credentials.json
+
+# Local agent handoff files are kept outside the source repository.
+AGENTS.md
+PROJECT_STATUS.md
+TASKS.md
+CHANGELOG_AI.md
