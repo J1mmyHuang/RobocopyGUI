@@ -77,4 +77,4 @@ dotnet build .\RobocopyGUI.csproj -c Release
 
 ![RobocopyGUI Star 历史](assets/star-history.svg)
 
-图表由本仓库的 GitHub Actions 每天自动更新，不依赖第三方 Star 图表服务。
+图表由本仓库的 GitHub Actions 每天自动更新。
