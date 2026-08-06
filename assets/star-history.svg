@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320" role="img" aria-labelledby="title description">
   <title id="title">RobocopyGUI Star 历史</title>
-  <desc id="description">截至 2026-08-05，仓库共有 4 个 Star。</desc>
+  <desc id="description">截至 2026-08-06，仓库共有 4 个 Star。</desc>
   <rect width="900" height="320" rx="16" fill="#0d1117"/>
   <text x="58" y="52" fill="#f0f6fc" font-family="Segoe UI, sans-serif" font-size="26" font-weight="600">RobocopyGUI Star 历史</text>
-  <text x="58" y="82" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="15">每日自动记录 · 最近更新：2026-08-05</text>
+  <text x="58" y="82" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="15">每日自动记录 · 最近更新：2026-08-06</text>
   <text x="852" y="52" fill="#58a6ff" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600" text-anchor="end">★ 4</text>
   <path d="M58 112H852 M58 186H852 M58 260H852" stroke="#30363d" stroke-width="1"/>
-  <path d="M58.0 260.0 L99.8 112.0 L141.6 112.0 L183.4 112.0 L225.2 112.0 L266.9 112.0 L308.7 112.0 L350.5 112.0 L392.3 112.0 L434.1 112.0 L475.9 112.0 L517.7 112.0 L559.5 112.0 L601.3 112.0 L643.1 112.0 L684.8 112.0 L726.6 112.0 L768.4 112.0 L810.2 112.0 L852.0 112.0" fill="none" stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58.0 260.0 L97.7 112.0 L137.4 112.0 L177.1 112.0 L216.8 112.0 L256.5 112.0 L296.2 112.0 L335.9 112.0 L375.6 112.0 L415.3 112.0 L455.0 112.0 L494.7 112.0 L534.4 112.0 L574.1 112.0 L613.8 112.0 L653.5 112.0 L693.2 112.0 L732.9 112.0 L772.6 112.0 L812.3 112.0 L852.0 112.0" fill="none" stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="852.0" cy="112.0" r="5" fill="#58a6ff" stroke="#0d1117" stroke-width="3"/>
   <text x="58" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14">2026-07-17</text>
-  <text x="852" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">2026-08-05</text>
+  <text x="852" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">2026-08-06</text>
 </svg>
