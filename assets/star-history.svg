@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320" role="img" aria-labelledby="title description">
   <title id="title">RobocopyGUI Star 历史</title>
-  <desc id="description">截至 2026-08-20，仓库共有 4 个 Star。</desc>
+  <desc id="description">截至 2026-08-21，仓库共有 4 个 Star。</desc>
   <rect width="900" height="320" rx="16" fill="#0d1117"/>
   <text x="58" y="52" fill="#f0f6fc" font-family="Segoe UI, sans-serif" font-size="26" font-weight="600">RobocopyGUI Star 历史</text>
-  <text x="58" y="82" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="15">每日自动记录 · 最近更新：2026-08-20</text>
+  <text x="58" y="82" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="15">每日自动记录 · 最近更新：2026-08-21</text>
   <text x="852" y="52" fill="#58a6ff" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600" text-anchor="end">★ 4</text>
   <path d="M58 112H852 M58 186H852 M58 260H852" stroke="#30363d" stroke-width="1"/>
-  <path d="M58.0 260.0 L81.4 112.0 L104.7 112.0 L128.1 112.0 L151.4 112.0 L174.8 112.0 L198.1 112.0 L221.5 112.0 L244.8 112.0 L268.2 112.0 L291.5 112.0 L314.9 112.0 L338.2 112.0 L361.6 112.0 L384.9 112.0 L408.3 112.0 L431.6 112.0 L455.0 112.0 L478.4 112.0 L501.7 112.0 L525.1 112.0 L548.4 112.0 L571.8 112.0 L595.1 112.0 L618.5 112.0 L641.8 112.0 L665.2 112.0 L688.5 112.0 L711.9 112.0 L735.2 112.0 L758.6 112.0 L781.9 112.0 L805.3 112.0 L828.6 112.0 L852.0 112.0" fill="none" stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58.0 260.0 L80.7 112.0 L103.4 112.0 L126.1 112.0 L148.7 112.0 L171.4 112.0 L194.1 112.0 L216.8 112.0 L239.5 112.0 L262.2 112.0 L284.9 112.0 L307.5 112.0 L330.2 112.0 L352.9 112.0 L375.6 112.0 L398.3 112.0 L421.0 112.0 L443.7 112.0 L466.3 112.0 L489.0 112.0 L511.7 112.0 L534.4 112.0 L557.1 112.0 L579.8 112.0 L602.5 112.0 L625.1 112.0 L647.8 112.0 L670.5 112.0 L693.2 112.0 L715.9 112.0 L738.6 112.0 L761.3 112.0 L783.9 112.0 L806.6 112.0 L829.3 112.0 L852.0 112.0" fill="none" stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="852.0" cy="112.0" r="5" fill="#58a6ff" stroke="#0d1117" stroke-width="3"/>
   <text x="58" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14">2026-07-17</text>
-  <text x="852" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">2026-08-20</text>
+  <text x="852" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">2026-08-21</text>
 </svg>
