@@ -47,6 +47,19 @@ dotnet build .\RobocopyGui.csproj -c Release
 dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Release
 ```
 
+### WinUI 3 预览版
+
+`RobocopyGui.WinUI` 是按 WinUI 3 / Fluent 2 重做的新界面（Mica 背景、跟随系统明暗主题），与 WinForms 版共用 `RobocopyGui.Core`。除复制外还提供“剪切”模式：开启完整性校验时，只在全部文件校验一致后删除源文件；关闭校验时使用 Robocopy `/MOVE`，开始前会再次确认。
+
+预览版为免安装（unpackaged）、自包含 Windows App SDK 1.8 的 x64 程序，只需 .NET 10 SDK，不需要 Visual Studio：
+
+```powershell
+dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
+.\RobocopyGui.WinUI\bin\Debug\net10.0-windows10.0.19041.0\win-x64\RobocopyGUI.WinUI.exe
+```
+
+预览版尚未加入 `build.ps1` 与 Release 发布流程。
+
 ## 使用说明
 
 1. 选择源文件夹和目标文件夹。

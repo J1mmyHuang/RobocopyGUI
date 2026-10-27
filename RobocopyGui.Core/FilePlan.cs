@@ -6,7 +6,7 @@ namespace RobocopyGui.Core
     {
         public string Source, Target, RelativePath;
         public long Size, ExistingSize;
-        public DateTime ExistingWriteTime;
+        public DateTime ExistingWriteTime, SourceWriteTime;
         public bool NeedsCopy;
     }
 }

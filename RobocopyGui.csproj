@@ -9,9 +9,9 @@
     <RootNamespace>RobocopyGui</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="RobocopyGui.Core\**;tests\**" />
-    <None Remove="RobocopyGui.Core\**;tests\**" />
-    <EmbeddedResource Remove="RobocopyGui.Core\**;tests\**" />
+    <Compile Remove="RobocopyGui.Core\**;RobocopyGui.WinUI\**;tests\**" />
+    <None Remove="RobocopyGui.Core\**;RobocopyGui.WinUI\**;tests\**" />
+    <EmbeddedResource Remove="RobocopyGui.Core\**;RobocopyGui.WinUI\**;tests\**" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="RobocopyGui.Core\RobocopyGui.Core.csproj" />

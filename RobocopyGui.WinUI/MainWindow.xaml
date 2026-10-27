@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="RobocopyGui.WinUI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RobocopyGui.WinUI"
+    xmlns:toolkit="using:CommunityToolkit.WinUI.Controls">
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="Root">
+        <Grid.Resources>
+            <FontFamily x:Key="MonoFont">Cascadia Mono, Consolas</FontFamily>
+            <!-- The options column is ~490 DIP wide at the default size; keep card header controls on the right instead of wrapping below. -->
+            <x:Double x:Key="SettingsCardWrapThreshold">360</x:Double>
+            <Style x:Key="CardBorder" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+            </Style>
+            <Style x:Key="GroupHeader" BasedOn="{StaticResource BodyStrongTextBlockStyle}" TargetType="TextBlock">
+                <Setter Property="Margin" Value="0,0,0,6" />
+            </Style>
+            <Style x:Key="FooterButton" BasedOn="{StaticResource DefaultButtonStyle}" TargetType="Button">
+                <Setter Property="MinWidth" Value="96" />
+            </Style>
+            <Style x:Key="FooterAccentButton" BasedOn="{StaticResource AccentButtonStyle}" TargetType="Button">
+                <Setter Property="MinWidth" Value="96" />
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Title bar (content extends into it; caption buttons are drawn by the system) -->
+        <Grid x:Name="AppTitleBar" Padding="16,0,0,0" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <FontIcon VerticalAlignment="Center" FontSize="16" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE8C8;" />
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" Text="RobocopyGUI" />
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="256" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Task progress pane: status only, never navigation -->
+            <StackPanel Padding="32,12,16,16" Spacing="16">
+                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="任务进度" />
+                <StackPanel x:Name="StepsPanel" Spacing="4" />
+            </StackPanel>
+
+            <Border Grid.Column="1" Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1,1,0,0" CornerRadius="8,0,0,0">
+                <Grid Padding="32,28,32,24" RowSpacing="24">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Page header -->
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="4">
+                            <TextBlock x:Name="PageTitle" Style="{StaticResource TitleTextBlockStyle}" />
+                            <TextBlock x:Name="PageSubtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource BodyTextBlockStyle}" />
+                        </StackPanel>
+                        <local:StatusBadge x:Name="Badge" Grid.Column="1" Margin="0,6,0,0" VerticalAlignment="Top" />
+                    </Grid>
+
+                    <Grid Grid.Row="1" ColumnSpacing="24">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="500" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Setup column -->
+                        <ScrollViewer Margin="0,0,-12,0" Padding="0,0,12,0" VerticalScrollBarVisibility="Auto">
+                            <StackPanel Spacing="4">
+                                <TextBlock Style="{StaticResource GroupHeader}" Text="位置" />
+                                <Grid x:Name="LocationCard" AllowDrop="True" DragLeave="LocationCard_DragLeave" DragOver="LocationCard_DragOver" Drop="LocationCard_Drop">
+                                    <Border Padding="16" Style="{StaticResource CardBorder}">
+                                        <StackPanel Spacing="14">
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="源文件夹" />
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox x:Name="SourceBox" PlaceholderText="选择源文件夹，或把文件夹拖到这里" TextChanged="Input_Changed" />
+                                                    <Button x:Name="BrowseSource" Grid.Column="1" Click="BrowseSource_Click">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <FontIcon FontSize="16" Glyph="&#xE838;" />
+                                                            <TextBlock Text="浏览…" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="目标文件夹" />
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox x:Name="DestinationBox" PlaceholderText="选择目标文件夹" TextChanged="Input_Changed" />
+                                                    <Button x:Name="BrowseDestination" Grid.Column="1" Click="BrowseDestination_Click">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <FontIcon FontSize="16" Glyph="&#xE8B7;" />
+                                                            <TextBlock Text="浏览…" />
+                                                        </StackPanel>
+                                                    </Button>
+                                                </Grid>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <FontIcon x:Name="HintIcon" FontSize="14" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Glyph="&#xE8F4;" />
+                                                <TextBlock x:Name="HintText" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                    <!-- Drop overlay: only the source location accepts drops -->
+                                    <Grid x:Name="DropOverlay" Visibility="Collapsed">
+                                        <Border Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" CornerRadius="{ThemeResource ControlCornerRadius}" />
+                                        <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="{ThemeResource ControlCornerRadius}" Opacity="0.08" />
+                                        <Rectangle RadiusX="4" RadiusY="4" Stroke="{ThemeResource AccentFillColorDefaultBrush}" StrokeDashArray="3,2" StrokeThickness="2" />
+                                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                                            <FontIcon FontSize="32" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE8F4;" />
+                                            <TextBlock HorizontalAlignment="Center" Style="{StaticResource BodyStrongTextBlockStyle}" Text="松开鼠标，设为源文件夹" />
+                                            <TextBlock HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="只有源位置支持拖放；目标文件夹请点击“浏览…”选择。" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+
+                                <TextBlock Margin="0,20,0,6" Style="{StaticResource BodyStrongTextBlockStyle}" Text="选项" />
+                                <toolkit:SettingsCard x:Name="ModeCard" Header="操作模式">
+                                    <toolkit:SettingsCard.HeaderIcon>
+                                        <FontIcon x:Name="ModeIcon" Glyph="&#xE8C8;" />
+                                    </toolkit:SettingsCard.HeaderIcon>
+                                    <toolkit:Segmented x:Name="ModeSelector" SelectedIndex="0" SelectionChanged="Option_Changed">
+                                        <toolkit:SegmentedItem Content="复制">
+                                            <toolkit:SegmentedItem.Icon>
+                                                <FontIcon Glyph="&#xE8C8;" />
+                                            </toolkit:SegmentedItem.Icon>
+                                        </toolkit:SegmentedItem>
+                                        <toolkit:SegmentedItem Content="剪切">
+                                            <toolkit:SegmentedItem.Icon>
+                                                <FontIcon Glyph="&#xE8C6;" />
+                                            </toolkit:SegmentedItem.Icon>
+                                        </toolkit:SegmentedItem>
+                                    </toolkit:Segmented>
+                                </toolkit:SettingsCard>
+                                <toolkit:SettingsExpander x:Name="HashCard" Header="完整性校验" IsExpanded="True">
+                                    <toolkit:SettingsExpander.HeaderIcon>
+                                        <FontIcon Glyph="&#xEA18;" />
+                                    </toolkit:SettingsExpander.HeaderIcon>
+                                    <ToggleSwitch x:Name="HashToggle" IsOn="True" OffContent="关" OnContent="开" Toggled="HashToggle_Toggled" />
+                                    <toolkit:SettingsExpander.Items>
+                                        <toolkit:SettingsCard x:Name="AlgorithmCard" Header="哈希算法">
+                                            <ComboBox x:Name="AlgorithmBox" MinWidth="140" SelectionChanged="Option_Changed" />
+                                        </toolkit:SettingsCard>
+                                        <toolkit:SettingsCard x:Name="BlockCard" Header="读取块大小">
+                                            <ComboBox x:Name="BlockBox" MinWidth="140" SelectionChanged="Option_Changed" />
+                                        </toolkit:SettingsCard>
+                                    </toolkit:SettingsExpander.Items>
+                                </toolkit:SettingsExpander>
+                                <toolkit:SettingsExpander x:Name="AdvancedCard" Header="高级参数">
+                                    <toolkit:SettingsExpander.HeaderIcon>
+                                        <FontIcon Glyph="&#xE943;" />
+                                    </toolkit:SettingsExpander.HeaderIcon>
+                                    <toolkit:SettingsExpander.Items>
+                                        <toolkit:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical" Header="实际执行的命令">
+                                            <TextBlock x:Name="CommandText" FontFamily="{StaticResource MonoFont}" FontSize="12" IsTextSelectionEnabled="True" TextWrapping="Wrap" />
+                                        </toolkit:SettingsCard>
+                                    </toolkit:SettingsExpander.Items>
+                                </toolkit:SettingsExpander>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <!-- Run column -->
+                        <Grid Grid.Column="1" RowSpacing="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Style="{StaticResource GroupHeader}" Text="进度" />
+                            <InfoBar x:Name="StatusInfo" Grid.Row="1" Margin="0,0,0,8" IsClosable="False" />
+                            <Border Grid.Row="2" Padding="20" Style="{StaticResource CardBorder}">
+                                <StackPanel Spacing="16">
+                                    <StackPanel x:Name="CopyRow" Spacing="8">
+                                        <Grid>
+                                            <TextBlock x:Name="CopyLabel" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            <TextBlock x:Name="CopyValue" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource BodyTextBlockStyle}" />
+                                        </Grid>
+                                        <ProgressBar x:Name="CopyBar" Maximum="1000" />
+                                        <TextBlock x:Name="CopyDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                    </StackPanel>
+                                    <StackPanel x:Name="HashRow" Spacing="8">
+                                        <Grid>
+                                            <TextBlock x:Name="HashLabel" Style="{StaticResource BodyStrongTextBlockStyle}" Text="哈希校验" />
+                                            <TextBlock x:Name="HashValue" HorizontalAlignment="Right" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource BodyTextBlockStyle}" />
+                                        </Grid>
+                                        <ProgressBar x:Name="HashBar" Maximum="1000" />
+                                        <TextBlock x:Name="HashDetail" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                    </StackPanel>
+                                    <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                    <StackPanel Orientation="Horizontal" Spacing="40">
+                                        <StackPanel>
+                                            <TextBlock x:Name="Stat1Label" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="已扫描" />
+                                            <TextBlock x:Name="Stat1Value" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock x:Name="Stat2Label" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                            <TextBlock x:Name="Stat2Value" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock x:Name="Stat3Label" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="校验通过" />
+                                            <TextBlock x:Name="Stat3Value" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                        </StackPanel>
+                                        <StackPanel>
+                                            <TextBlock x:Name="Stat4Label" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
+                                            <TextBlock x:Name="Stat4Value" Style="{StaticResource SubtitleTextBlockStyle}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Row="3" Margin="0,12,0,0" Style="{StaticResource CardBorder}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <SelectorBar x:Name="LogTabs" Margin="8,4,8,0" SelectionChanged="LogTabs_SelectionChanged">
+                                        <SelectorBarItem x:Name="LogTab" IsSelected="True" Text="运行日志">
+                                            <SelectorBarItem.Icon>
+                                                <FontIcon Glyph="&#xE8A5;" />
+                                            </SelectorBarItem.Icon>
+                                        </SelectorBarItem>
+                                        <SelectorBarItem x:Name="ExceptionTab" Text="异常文件">
+                                            <SelectorBarItem.Icon>
+                                                <FontIcon Glyph="&#xE7BA;" />
+                                            </SelectorBarItem.Icon>
+                                        </SelectorBarItem>
+                                    </SelectorBar>
+                                    <Rectangle Grid.Row="1" Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                    <Grid Grid.Row="2">
+                                        <Grid x:Name="LogView">
+                                            <ListView x:Name="LogList" Padding="0,8" IsItemClickEnabled="False" SelectionMode="None">
+                                                <ListView.ItemContainerStyle>
+                                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                                        <Setter Property="MinHeight" Value="22" />
+                                                        <Setter Property="Padding" Value="16,0" />
+                                                    </Style>
+                                                </ListView.ItemContainerStyle>
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="local:LogLine">
+                                                        <Grid ColumnSpacing="12">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="44" />
+                                                                <ColumnDefinition Width="*" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Text="{x:Bind Time}" />
+                                                            <TextBlock Grid.Column="1" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{x:Bind LevelBrush}" Text="{x:Bind Level}" />
+                                                            <TextBlock Grid.Column="2" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{x:Bind MessageBrush}" Text="{x:Bind Message}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Message}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
+                                            <TextBlock x:Name="LogEmpty" Margin="16,12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="开始任务后，这里会实时显示 Robocopy 的输出。" />
+                                        </Grid>
+                                        <Grid x:Name="ExceptionView" Padding="16,12" RowSpacing="6" Visibility="Collapsed">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="*" />
+                                            </Grid.RowDefinitions>
+                                            <Grid x:Name="ExceptionHeader" ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="40" />
+                                                    <ColumnDefinition Width="110" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="文件" />
+                                                <TextBlock Grid.Column="1" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="结果" />
+                                                <TextBlock Grid.Column="2" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="说明" />
+                                            </Grid>
+                                            <ListView x:Name="ExceptionList" Grid.Row="1" Margin="-16,0" SelectionMode="None">
+                                                <ListView.ItemContainerStyle>
+                                                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                                        <Setter Property="MinHeight" Value="24" />
+                                                        <Setter Property="Padding" Value="16,0" />
+                                                    </Style>
+                                                </ListView.ItemContainerStyle>
+                                                <ListView.ItemTemplate>
+                                                    <DataTemplate x:DataType="local:ExceptionRow">
+                                                        <Grid ColumnSpacing="12">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="40" />
+                                                                <ColumnDefinition Width="110" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock FontFamily="{StaticResource MonoFont}" FontSize="12" Text="{x:Bind Path}" TextTrimming="CharacterEllipsis" ToolTipService.ToolTip="{x:Bind Path}" />
+                                                            <TextBlock Grid.Column="1" Foreground="{x:Bind ResultBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind Result}" />
+                                                            <TextBlock Grid.Column="2" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind Detail}" TextTrimming="CharacterEllipsis" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </ListView.ItemTemplate>
+                                            </ListView>
+                                            <StackPanel x:Name="ExceptionEmpty" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
+                                                <FontIcon x:Name="ExceptionEmptyIcon" FontSize="32" Foreground="{ThemeResource SystemFillColorSuccessBrush}" Glyph="&#xEC61;" />
+                                                <TextBlock x:Name="ExceptionEmptyTitle" HorizontalAlignment="Center" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                                <TextBlock x:Name="ExceptionEmptyText" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" TextAlignment="Center" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+
+                    <!-- Footer -->
+                    <Grid Grid.Row="2" ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Spacing="8">
+                            <FontIcon x:Name="FooterIcon" FontSize="14" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Glyph="&#xE946;" />
+                            <TextBlock x:Name="FooterText" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
+                        </StackPanel>
+                        <Button x:Name="ExportButton" Grid.Column="1" Click="ExportButton_Click" Content="导出报告" Style="{StaticResource FooterButton}" />
+                        <Button x:Name="StopButton" Grid.Column="2" Click="StopButton_Click" Content="停止" Style="{StaticResource FooterButton}" />
+                        <Button x:Name="StartButton" Grid.Column="3" Click="StartButton_Click" Content="开始" Style="{StaticResource FooterAccentButton}" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

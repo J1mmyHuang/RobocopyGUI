@@ -19,15 +19,17 @@ namespace RobocopyGui.Core
 
         [DllImport("kernel32.dll")] static extern int GetOEMCP();
 
-        public static string BuildArguments(string source, string destination) { return "\"" + source + "\" \"" + destination + "\" /E /Z /FFT /R:2 /W:2 /COPY:DAT /DCOPY:DAT /TEE /NP /NDL"; }
+        public static string BuildArguments(string source, string destination, bool move = false) { return "\"" + source + "\" \"" + destination + "\" " + Switches(move) + " /TEE /NP /NDL"; }
 
-        public async Task CopyAsync(string source, string destination, IReadOnlyList<FilePlan> plan, WorkflowProgress progress, Action<string> log, CancellationToken token)
+        public static string Switches(bool move) { return "/E /Z /FFT /R:2 /W:2 /COPY:DAT /DCOPY:DAT" + (move ? " /MOVE" : ""); }
+
+        public async Task CopyAsync(string source, string destination, IReadOnlyList<FilePlan> plan, WorkflowProgress progress, Action<string> log, CancellationToken token, bool move = false)
         {
             if (progress.CopyTotal == 0) return; var monitorStop = new CancellationTokenSource(); Task monitor = Task.Run(delegate { CopyMonitor.Run(plan, progress, token, monitorStop.Token); });
             Exception runError = null;
             try
             {
-                string args = BuildArguments(source, destination); log("$ robocopy " + args); int code = await Task.Run(delegate { return Run(args, log, token); }, token); if (code >= 8) runError = new InvalidOperationException("Robocopy 返回错误代码 " + code + "。");
+                string args = BuildArguments(source, destination, move); log("$ robocopy " + args); int code = await Task.Run(delegate { return Run(args, log, token); }, token); if (code >= 8) runError = new InvalidOperationException("Robocopy 返回错误代码 " + code + "。");
             }
             catch (Exception ex) { runError = ex; }
             monitorStop.Cancel(); try { await monitor; } catch (OperationCanceledException) { } monitorStop.Dispose();

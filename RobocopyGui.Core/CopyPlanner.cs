@@ -14,7 +14,7 @@ namespace RobocopyGui.Core
             Directory.CreateDirectory(destination); foreach (string dir in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories)) { token.ThrowIfCancellationRequested(); Directory.CreateDirectory(Path.Combine(destination, Relative(source, dir))); }
             foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
             {
-                token.ThrowIfCancellationRequested(); var info = new FileInfo(file); string relative = Relative(source, file), target = Path.Combine(destination, relative); var item = new FilePlan { Source = file, Target = target, RelativePath = relative, Size = info.Length, NeedsCopy = true };
+                token.ThrowIfCancellationRequested(); var info = new FileInfo(file); string relative = Relative(source, file), target = Path.Combine(destination, relative); var item = new FilePlan { Source = file, Target = target, RelativePath = relative, Size = info.Length, SourceWriteTime = info.LastWriteTimeUtc, NeedsCopy = true };
                 if (File.Exists(target)) { var existing = new FileInfo(target); item.ExistingSize = existing.Length; item.ExistingWriteTime = existing.LastWriteTimeUtc; item.NeedsCopy = existing.Length != info.Length || Math.Abs((existing.LastWriteTimeUtc - info.LastWriteTimeUtc).TotalSeconds) > 2; }
                 plan.Add(item); progress.AddScanned(item.Size);
             }
