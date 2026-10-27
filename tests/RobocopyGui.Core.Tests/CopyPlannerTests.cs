@@ -21,7 +21,7 @@ namespace RobocopyGui.Core.Tests
                 Assert.True(Directory.Exists(Path.Combine(destination, "a"))); Assert.True(Directory.Exists(Path.Combine(destination, "empty")));
                 Assert.Equal(new[] { @"a\b.txt", "c.txt" }, plan.Select(p => p.RelativePath).OrderBy(p => p).ToArray());
                 Assert.All(plan, p => { Assert.True(p.NeedsCopy); Assert.Equal(Path.Combine(destination, p.RelativePath), p.Target); });
-                Assert.Equal(2, progress.ScanFiles); Assert.Equal(8, progress.ScanBytes); Assert.Equal(8, progress.CopyTotal);
+                Assert.Equal(2, progress.ScanFiles); Assert.Equal(8, progress.ScanBytes); Assert.Equal(8, progress.CopyTotal); Assert.True(progress.ScanCompleted);
             }
         }
 
@@ -48,8 +48,9 @@ namespace RobocopyGui.Core.Tests
             using (var src = new TempDir()) using (var dst = new TempDir())
             {
                 src.WriteFile(@"sub\file.txt", "x");
-                var cancelled = new CancellationToken(true);
-                Assert.Throws<OperationCanceledException>(() => CopyPlanner.Build(src.Root, dst.Root, new WorkflowProgress(), cancelled));
+                var cancelled = new CancellationToken(true); var progress = new WorkflowProgress();
+                Assert.Throws<OperationCanceledException>(() => CopyPlanner.Build(src.Root, dst.Root, progress, cancelled));
+                Assert.False(progress.ScanCompleted);
             }
         }
 

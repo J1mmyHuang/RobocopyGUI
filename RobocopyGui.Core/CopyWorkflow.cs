@@ -27,7 +27,9 @@ namespace RobocopyGui.Core
         public static string ValidatePaths(string source, string destination)
         {
             if (!Directory.Exists(source)) return "源文件夹不存在或不可访问。";
-            if (string.Equals(Path.GetFullPath(source).TrimEnd('\\'), Path.GetFullPath(destination).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)) return "源文件夹和目标文件夹不能相同。";
+            if (string.IsNullOrWhiteSpace(destination)) return "请选择目标文件夹。";
+            string fullDestination; try { fullDestination = Path.GetFullPath(destination); } catch (Exception ex) when (ex is ArgumentException || ex is NotSupportedException || ex is PathTooLongException) { return "目标文件夹路径无效。"; }
+            if (string.Equals(Path.GetFullPath(source).TrimEnd('\\'), fullDestination.TrimEnd('\\'), StringComparison.OrdinalIgnoreCase)) return "源文件夹和目标文件夹不能相同。";
             return null;
         }
 

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -28,6 +30,26 @@ namespace RobocopyGui.Core.Tests
                 Assert.Equal(progress.CopyTotal, progress.CopyDone);
                 Assert.StartsWith("$ robocopy \"" + src.Root + "\"", log.First());
             }
+        }
+
+        [Fact]
+        public void Run_DecodesNonAsciiFileNamesInOutput()
+        {
+            using (var src = new TempDir()) using (var dst = new TempDir())
+            {
+                string name = OemRepresentableName(); src.WriteFile(name, "x"); var log = new ConcurrentQueue<string>();
+                int code = new RobocopyRunner().Run(RobocopyRunner.BuildArguments(src.Root, dst.Root), log.Enqueue, CancellationToken.None);
+                Assert.True(code < 8, "robocopy exit code " + code);
+                Assert.Contains(log, l => l.Contains(name));
+            }
+        }
+
+        [DllImport("kernel32.dll")] static extern int GetOEMCP();
+
+        static string OemRepresentableName()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); var oem = Encoding.GetEncoding(GetOEMCP());
+            return new[] { "中文 文件.txt", "Café ñ.txt", "Привет.txt", "Ελληνικά.txt" }.First(n => oem.GetString(oem.GetBytes(n)) == n);
         }
 
         [Fact]

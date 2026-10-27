@@ -5,7 +5,7 @@ namespace RobocopyGui.Core
     public sealed class WorkflowProgress
     {
         long copyDone, copyTotal, hashDone, hashTotal, scanFiles, scanBytes;
-        int hashPassed, hashFailed;
+        int hashPassed, hashFailed, scanCompleted;
 
         public long CopyDone { get { return Interlocked.Read(ref copyDone); } }
         public long CopyTotal { get { return Interlocked.Read(ref copyTotal); } }
@@ -15,8 +15,10 @@ namespace RobocopyGui.Core
         public long ScanBytes { get { return Interlocked.Read(ref scanBytes); } }
         public int HashPassed { get { return Volatile.Read(ref hashPassed); } }
         public int HashFailed { get { return Volatile.Read(ref hashFailed); } }
+        public bool ScanCompleted { get { return Volatile.Read(ref scanCompleted) == 1; } }
 
-        public void Reset() { copyDone = copyTotal = hashDone = hashTotal = scanFiles = scanBytes = 0; hashPassed = hashFailed = 0; }
+        public void Reset() { copyDone = copyTotal = hashDone = hashTotal = scanFiles = scanBytes = 0; hashPassed = hashFailed = scanCompleted = 0; }
+        public void CompleteScan() { Volatile.Write(ref scanCompleted, 1); }
         public void AddScanned(long bytes) { Interlocked.Increment(ref scanFiles); Interlocked.Add(ref scanBytes, bytes); }
         public void SetCopyTotal(long bytes) { Interlocked.Exchange(ref copyTotal, bytes); }
         public void SetCopyDone(long bytes) { Interlocked.Exchange(ref copyDone, bytes); }

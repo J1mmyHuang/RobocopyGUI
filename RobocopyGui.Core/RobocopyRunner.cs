@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,13 @@ namespace RobocopyGui.Core
     public sealed class RobocopyRunner
     {
         Process activeProcess;
+
+        static RobocopyRunner() { Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); }
+
+        // robocopy writes redirected output in the system OEM code page (e.g. 936 on Chinese Windows), not UTF-8.
+        public static Encoding OutputEncoding { get { return Encoding.GetEncoding(GetOEMCP()); } }
+
+        [DllImport("kernel32.dll")] static extern int GetOEMCP();
 
         public static string BuildArguments(string source, string destination) { return "\"" + source + "\" \"" + destination + "\" /E /Z /FFT /R:2 /W:2 /COPY:DAT /DCOPY:DAT /TEE /NP /NDL"; }
 
@@ -28,7 +36,7 @@ namespace RobocopyGui.Core
 
         public int Run(string args, Action<string> log, CancellationToken token)
         {
-            using (var process = new Process { StartInfo = new ProcessStartInfo("robocopy.exe", args) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = Encoding.Default } })
+            using (var process = new Process { StartInfo = new ProcessStartInfo("robocopy.exe", args) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, StandardOutputEncoding = OutputEncoding } })
             {
                 activeProcess = process; process.Start(); string line; while ((line = process.StandardOutput.ReadLine()) != null) { if (!string.IsNullOrWhiteSpace(line)) log(line); token.ThrowIfCancellationRequested(); } process.WaitForExit(); activeProcess = null; token.ThrowIfCancellationRequested(); return process.ExitCode;
             }

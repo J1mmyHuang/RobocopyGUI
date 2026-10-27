@@ -31,10 +31,24 @@ namespace RobocopyGui.Core.Tests
             }
         }
 
-        [Fact]
-        public void ValidatePaths_StillThrowsForEmptyDestination()
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void ValidatePaths_AsksForDestinationWhenEmpty(string destination)
         {
-            using (var src = new TempDir()) Assert.Throws<ArgumentException>(() => CopyWorkflow.ValidatePaths(src.Root, ""));
+            using (var src = new TempDir()) Assert.Equal("请选择目标文件夹。", CopyWorkflow.ValidatePaths(src.Root, destination));
+        }
+
+        [Fact]
+        public void ValidatePaths_RejectsMalformedDestination()
+        {
+            using (var src = new TempDir()) Assert.Equal("目标文件夹路径无效。", CopyWorkflow.ValidatePaths(src.Root, "D:\\out\0bad"));
+        }
+
+        [Fact]
+        public void ValidatePaths_ChecksSourceBeforeDestination()
+        {
+            using (var src = new TempDir()) Assert.Equal("源文件夹不存在或不可访问。", CopyWorkflow.ValidatePaths(src.Combine("missing"), ""));
         }
 
         [Fact]
@@ -78,9 +92,10 @@ namespace RobocopyGui.Core.Tests
                 var workflow = new CopyWorkflow();
                 await workflow.RunAsync(src.Root, dst.Root, true, "SHA-256", 4 * 1024 * 1024, CancellationToken.None);
                 var rec = new Recorder(); rec.Attach(workflow); workflow.Reset();
-                Assert.Empty(workflow.Records); Assert.Equal(0, workflow.Progress.ScanFiles);
+                Assert.Empty(workflow.Records); Assert.Equal(0, workflow.Progress.ScanFiles); Assert.False(workflow.Progress.ScanCompleted);
                 await workflow.RunAsync(src.Root, dst.Root, true, "SHA-256", 4 * 1024 * 1024, CancellationToken.None);
                 Assert.Equal("无需复制，文件已匹配。", rec.Statuses[1]);
+                Assert.Equal("无需复制，文件已匹配", ProgressText.Copy(workflow.Progress));
                 Assert.DoesNotContain(rec.Logs, l => l.StartsWith("$ robocopy "));
                 Assert.Equal("完成。通过 1，异常 0。", rec.Logs.Last());
             }

@@ -18,7 +18,7 @@ namespace RobocopyGui.Core
                 if (File.Exists(target)) { var existing = new FileInfo(target); item.ExistingSize = existing.Length; item.ExistingWriteTime = existing.LastWriteTimeUtc; item.NeedsCopy = existing.Length != info.Length || Math.Abs((existing.LastWriteTimeUtc - info.LastWriteTimeUtc).TotalSeconds) > 2; }
                 plan.Add(item); progress.AddScanned(item.Size);
             }
-            progress.SetCopyTotal(plan.Where(p => p.NeedsCopy).Sum(p => p.Size));
+            progress.SetCopyTotal(plan.Where(p => p.NeedsCopy).Sum(p => p.Size)); progress.CompleteScan();
             return plan;
         }
 

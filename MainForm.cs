@@ -119,9 +119,9 @@ namespace RobocopyGui
 
         void PaintState()
         {
-            var progress = workflow.Progress; long cTotal = progress.CopyTotal, cDone = progress.CopyDone, hTotal = progress.HashTotal, hDone = progress.HashDone, files = progress.ScanFiles; SetBar(copyBar, cDone, cTotal); SetBar(hashBar, hDone, hTotal);
-            copyLabel.Text = cTotal > 0 ? Format.Bytes(Math.Min(cDone, cTotal)) + " / " + Format.Bytes(cTotal) + "  ·  " + Format.Percent(cDone, cTotal) : (files > 0 ? "扫描到 " + files + " 个文件；待复制大小计算中" : "等待扫描");
-            hashLabel.Text = hTotal > 0 ? Format.Bytes(Math.Min(hDone, hTotal)) + " / " + Format.Bytes(hTotal) + "  ·  " + Format.Percent(hDone, hTotal) : (verifyBox.Checked ? "等待复制完成" : "已跳过");
+            var progress = workflow.Progress; SetBar(copyBar, progress.CopyDone, progress.CopyTotal); SetBar(hashBar, progress.HashDone, progress.HashTotal);
+            copyLabel.Text = ProgressText.Copy(progress);
+            hashLabel.Text = ProgressText.Hash(progress, verifyBox.Checked);
             countersLabel.Text = workerStatus + "   通过 " + progress.HashPassed + " · 异常 " + progress.HashFailed;
             bool followLog = IsLogAtBottom(); bool appendedLog = false;
             for (int i = 0; i < 80; i++) { string line; if (!logQueue.TryDequeue(out line)) break; log.AppendText(line + Environment.NewLine); appendedLog = true; }
