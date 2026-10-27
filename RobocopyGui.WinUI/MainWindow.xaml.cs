@@ -1,9 +1,14 @@
+// SPDX-FileCopyrightText: 2026 J1mmyHuang
+// SPDX-License-Identifier: AGPL-3.0-or-later WITH AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -226,6 +231,46 @@ namespace RobocopyGui.WinUI
                 PrimaryButtonText = raw ? "仍然剪切" : "开始剪切", CloseButtonText = "取消", DefaultButton = raw ? ContentDialogButton.Close : ContentDialogButton.Primary,
             };
             return await dialog.ShowAsync() == ContentDialogResult.Primary;
+        }
+
+        const string SourceUrl = "https://github.com/J1mmyHuang/RobocopyGUI";
+
+        // AGPL section 5(d): an interactive UI must show the copyright, that there is no warranty, that the work may be conveyed under the license, and how to read it.
+        async void AboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            string version = typeof(MainWindow).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? ""; int plus = version.IndexOf('+');
+            string build = plus >= 0 && version.Length >= plus + 8 ? "构建自提交 " + version.Substring(plus + 1, 7) : "版本 " + version;
+            var body = new StackPanel { Spacing = 12 };
+            foreach (string line in new[]
+            {
+                "Windows 自带 Robocopy 的图形界面 · " + build,
+                "Copyright (C) 2026 J1mmyHuang",
+                "本程序是自由软件：你可以依据自由软件基金会发布的 GNU Affero 通用公共许可证第 3 版，或（由你选择）任何更高版本，再分发和修改它；另附一条第 7 条附加许可，允许与 Microsoft Windows App SDK、.NET 及 Windows 系统组件组合分发。",
+                "本程序按“原样”提供，不附带任何担保，包括适销性或特定用途适用性的默示担保。详见许可证全文。",
+                "RobocopyGUI 是独立项目，与 Microsoft 没有关联，也未获其认可或赞助；它调用的是你电脑上 Windows 自带的 robocopy.exe。",
+            }) body.Children.Add(new TextBlock { Text = line, TextWrapping = TextWrapping.Wrap, IsTextSelectionEnabled = true });
+            var links = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Margin = new Thickness(-11, 0, 0, 0) };
+            links.Children.Add(new HyperlinkButton { Content = "源代码", NavigateUri = new Uri(SourceUrl) });
+            links.Children.Add(DocumentLink("许可证全文", "LICENSE", "https://www.gnu.org/licenses/agpl-3.0.html"));
+            links.Children.Add(DocumentLink("附加许可", "LICENSE-EXCEPTION.txt", SourceUrl + "/blob/main/LICENSE-EXCEPTION.txt"));
+            links.Children.Add(DocumentLink("第三方组件声明", "THIRD-PARTY-NOTICES.md", SourceUrl + "/blob/main/THIRD-PARTY-NOTICES.md"));
+            body.Children.Add(links);
+            var dialog = new ContentDialog
+            {
+                XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
+                Title = "关于 RobocopyGUI", Content = body, CloseButtonText = "关闭", DefaultButton = ContentDialogButton.Close,
+            };
+            await dialog.ShowAsync();
+        }
+
+        // The release package ships these files next to the program: open that copy as plain text, or the online copy when running from source.
+        static HyperlinkButton DocumentLink(string text, string fileName, string onlineUrl)
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, fileName);
+            if (!File.Exists(path)) return new HyperlinkButton { Content = text, NavigateUri = new Uri(onlineUrl) };
+            var link = new HyperlinkButton { Content = text };
+            link.Click += delegate { Process.Start(new ProcessStartInfo("notepad.exe", "\"" + path + "\"") { UseShellExecute = true }); };
+            return link;
         }
 
         async void ExportButton_Click(object sender, RoutedEventArgs e)

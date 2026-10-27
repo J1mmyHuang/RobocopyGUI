@@ -1,0 +1,34 @@
+RobocopyGUI
+Copyright (C) 2026 J1mmyHuang
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License
+for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program (see the LICENSE file). If not, see
+<https://www.gnu.org/licenses/>.
+
+
+Additional permission under GNU AGPL version 3 section 7
+(SPDX identifier: AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception; source
+files are marked "AGPL-3.0-or-later WITH
+AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception")
+
+If you modify this Program, or any covered work, by linking or combining it
+with the Microsoft Windows App SDK (including WinUI 3 and the Windows App
+Runtime), the Microsoft .NET runtime and libraries, or components of
+Microsoft Windows (including the Windows SDK projections for .NET), or
+modified versions of those libraries, containing parts covered by the terms
+of their respective Microsoft licenses, the licensors of this Program grant
+you additional permission to convey the resulting work.
+
+This permission covers only the Microsoft components named above. It does
+not extend to any other library that is not under terms compatible with the
+GNU AGPL.

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 J1mmyHuang
+// SPDX-License-Identifier: AGPL-3.0-or-later WITH AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception
+
 using System;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -58,7 +61,21 @@ namespace RobocopyGui
                 stepLabels[i] = label; panel.Controls.Add(label);
             }
             panel.Controls.Add(new Label { Text = "真实进度\n\n复制：依据目标端已确认写入或匹配的字节数。\n\n校验：依据实际参与哈希的读取字节数。", ForeColor = Muted, Font = new Font(UiFont, 9), Width = 148, Height = 155, Location = new Point(16, 380) });
+            // AGPL section 5(d): the interface shows the copyright, that there is no warranty, the license and where to read it.
+            var about = new LinkLabel { Text = "关于与许可", AutoSize = true, Location = new Point(26, 338), LinkColor = Accent, ActiveLinkColor = Color.White, Font = new Font(UiFont, 9) };
+            about.LinkClicked += delegate { ShowAbout(); }; panel.Controls.Add(about);
             SetStep(0); return panel;
+        }
+
+        void ShowAbout()
+        {
+            MessageBox.Show(this,
+                "RobocopyGUI 经典版\nCopyright (C) 2026 J1mmyHuang\n\n" +
+                "本程序是自由软件：你可以依据自由软件基金会发布的 GNU Affero 通用公共许可证第 3 版，或（由你选择）任何更高版本，再分发和修改它；另附一条第 7 条附加许可，允许与 Microsoft Windows App SDK、.NET 及 Windows 系统组件组合分发。\n\n" +
+                "本程序按“原样”提供，不附带任何担保。许可证全文见程序目录中的 LICENSE 与 LICENSE-EXCEPTION.txt，或 https://www.gnu.org/licenses/agpl-3.0.html 。\n\n" +
+                "源代码：https://github.com/J1mmyHuang/RobocopyGUI\n\n" +
+                "RobocopyGUI 是独立项目，与 Microsoft 没有关联，也未获其认可或赞助。",
+                "关于 RobocopyGUI", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         Control BuildMain()

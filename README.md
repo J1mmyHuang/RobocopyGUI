@@ -26,6 +26,8 @@
 - 发布版是一个约 10 MB 的 zip 压缩包，解压后运行 `RobocopyGUI\RobocopyGUI.exe`，无需安装。
 - 本项目仅调用用户电脑中已有的 `robocopy.exe`，不包含、不复制、也不分发 Robocopy 或其他 Windows 系统组件。
 - Robocopy 及 Windows 系统组件的权利归 Microsoft 所有，并适用其各自的许可条款。
+- RobocopyGUI 是独立项目，与 Microsoft 没有关联，也未获 Microsoft 认可或赞助。
+- RobocopyGUI 本身不收集、不上传任何数据。它依赖的 Microsoft 运行库（.NET、Windows App Runtime）可能按各自的许可条款和 Windows 的诊断数据设置向 Microsoft 发送诊断信息。
 
 ## 构建
 
@@ -45,7 +47,7 @@ dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
 .\RobocopyGui.WinUI\bin\Debug\net10.0-windows10.0.19041.0\win-x64\RobocopyGUI.exe
 ```
 
-> 程序为免安装（unpackaged）的 x64 应用，依赖用户系统中安装的 .NET 10 运行时和 Windows App Runtime 1.8，发布包里只有程序本身和必要的小型引导/投影库。
+> 程序为免安装（unpackaged）的 x64 应用，依赖用户系统中安装的 .NET 10 运行时和 Windows App Runtime 1.8，发布包里只有程序本身、必要的小型引导/投影库，以及 `LICENSE`、`LICENSE-EXCEPTION.txt`、`THIRD-PARTY-NOTICES.md` 和 `licenses` 文件夹。
 
 ### 经典版（WinForms）
 
@@ -82,9 +84,13 @@ dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Rele
 
 剪切一个文件夹时，整个文件夹会移到目标中，源文件夹随后删除；剪切单个文件时，只删除这个文件，它所在的文件夹和其他文件不受影响（关闭校验时使用 Robocopy `/MOV` 而不是 `/MOVE`）。目标文件夹不能位于源文件夹内。
 
+> **注意：剪切会删除源文件。** 开启完整性校验时，只有全部文件校验一致才会删除；关闭校验时使用 Robocopy `/MOVE` 或 `/MOV`，复制成功后立即删除源文件，不比对内容。处理重要数据前请先备份。
+
 ## 发布版本
 
 可执行文件不放在源代码目录中，而是作为 GitHub Release 附件发布。下载程序请前往仓库的 [Releases 页面](https://github.com/J1mmyHuang/RobocopyGUI/releases)。
+
+每个 Release 都从对应的 Git 标签发布：GitHub 会在 Release 页面自动附上该标签的源代码压缩包，这就是该版本程序的对应源代码（AGPL 要求随程序提供）。发布新版本时，在 Release 说明中写明对应的标签和提交；程序“关于与许可”中也会显示构建所用的提交。
 
 ## 后续计划
 
@@ -103,9 +109,13 @@ dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Rele
 
 ## 许可证
 
-本项目采用 [Mozilla Public License 2.0 (MPL-2.0)](LICENSE)。
+自 V0.1.7 之后的版本起（即 2026 年 10 月 27 日及以后的提交），本项目采用 [GNU Affero General Public License v3.0 或更高版本（AGPL-3.0-or-later）](LICENSE)，并附有一条 AGPL 第 7 条附加许可（见 [LICENSE-EXCEPTION.txt](LICENSE-EXCEPTION.txt)）：只允许把本程序与 Microsoft Windows App SDK（WinUI 3、Windows App Runtime）、.NET 运行库和 Windows 系统组件组合并分发，不涉及其他专有库。
 
-当你发布对本项目现有源代码文件的修改，或发布包含这些文件的可执行程序时，需保留 MPL-2.0 许可与版权声明，并以合理方式提供相应源代码。MPL-2.0 为按文件适用的弱著佐权许可证：它允许与独立文件组成更大的作品；但本项目受 MPL 覆盖的源代码文件及其修改仍须遵守 MPL-2.0。
+- 你可以自由使用、修改和再分发本项目。分发修改版（包括可执行程序），或通过网络向他人提供修改版时，必须以 AGPL-3.0-or-later 公开对应的完整源代码，并保留版权与许可声明。
+- 发布包中的第三方组件不受 AGPL 约束，适用各自的许可条款，见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+- V0.1.7 及更早以 MPL-2.0 发布的版本和代码，仍可按 MPL-2.0 使用。
+- 源文件开头带有 SPDX 标识：`AGPL-3.0-or-later WITH AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception`，其中附加许可的原文即 `LICENSE-EXCEPTION.txt`。
+- 参与贡献的方式和许可要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## Star 历史
 

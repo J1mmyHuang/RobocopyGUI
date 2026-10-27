@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: 2026 J1mmyHuang -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later WITH AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception -->
 <Window
     x:Class="RobocopyGui.WinUI.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -51,11 +53,23 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Task progress pane: status only, never navigation -->
-            <StackPanel Padding="32,12,16,16" Spacing="16">
-                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="任务进度" />
-                <StackPanel x:Name="StepsPanel" Spacing="4" />
-            </StackPanel>
+            <!-- Task progress pane: status only, never navigation. The About link at the bottom carries the AGPL legal notices. -->
+            <Grid Padding="32,12,16,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Spacing="16">
+                    <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="任务进度" />
+                    <StackPanel x:Name="StepsPanel" Spacing="4" />
+                </StackPanel>
+                <HyperlinkButton x:Name="AboutButton" Grid.Row="1" Margin="-11,0,0,0" AutomationProperties.Name="关于与许可" Click="AboutButton_Click">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE946;" />
+                        <TextBlock Text="关于与许可" />
+                    </StackPanel>
+                </HyperlinkButton>
+            </Grid>
 
             <Border Grid.Column="1" Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1,1,0,0" CornerRadius="8,0,0,0">
                 <Grid Padding="32,28,32,24" RowSpacing="24">

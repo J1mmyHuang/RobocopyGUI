@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: 2026 J1mmyHuang -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later WITH AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception -->
 <UserControl
     x:Class="RobocopyGui.WinUI.StatusBadge"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

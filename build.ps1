@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 J1mmyHuang
+# SPDX-License-Identifier: AGPL-3.0-or-later WITH AdditionRef-RobocopyGUI-Microsoft-Runtime-Exception
+
 param(
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
@@ -13,6 +16,15 @@ if ($LASTEXITCODE -ne 0 -or -not $sdkVersion.StartsWith("10.")) {
 
 $publishRoot = Join-Path $PSScriptRoot "publish"
 
+# The license, its section 7 permission and the third-party notices travel with every build.
+function Copy-LicenseFiles([string]$destination, [switch]$WithThirdParty) {
+    Copy-Item (Join-Path $PSScriptRoot "LICENSE"), (Join-Path $PSScriptRoot "LICENSE-EXCEPTION.txt") $destination
+    if ($WithThirdParty) {
+        Copy-Item (Join-Path $PSScriptRoot "THIRD-PARTY-NOTICES.md") $destination
+        Copy-Item (Join-Path $PSScriptRoot "licenses") $destination -Recurse
+    }
+}
+
 if ($Classic) {
     $project = Join-Path $PSScriptRoot "RobocopyGui.csproj"
     $output = Join-Path $publishRoot "classic"
@@ -24,6 +36,7 @@ if ($Classic) {
         throw "dotnet publish failed with exit code $LASTEXITCODE."
     }
 
+    Copy-LicenseFiles $output
     Write-Host "Build complete: $output\RobocopyGUI.exe" -ForegroundColor Green
     return
 }
@@ -43,6 +56,8 @@ dotnet publish $project -c $Configuration -r win-x64 --self-contained false `
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE."
 }
+
+Copy-LicenseFiles $output -WithThirdParty
 
 # The archive keeps the RobocopyGUI folder as its root, so extracting it doesn't scatter files.
 Compress-Archive -Path $output -DestinationPath $archive -Force
