@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="320" viewBox="0 0 900 320" role="img" aria-labelledby="title description">
   <title id="title">RobocopyGUI Star 历史</title>
-  <desc id="description">截至 2026-07-31，仓库共有 4 个 Star。</desc>
+  <desc id="description">截至 2026-10-27，仓库共有 5 个 Star。</desc>
   <rect width="900" height="320" rx="16" fill="#0d1117"/>
   <text x="58" y="52" fill="#f0f6fc" font-family="Segoe UI, sans-serif" font-size="26" font-weight="600">RobocopyGUI Star 历史</text>
-  <text x="58" y="82" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="15">每日自动记录 · 最近更新：2026-07-31</text>
-  <text x="852" y="52" fill="#58a6ff" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600" text-anchor="end">★ 4</text>
+  <text x="58" y="82" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="15">每日自动记录 · 最近更新：2026-10-27</text>
+  <text x="852" y="52" fill="#58a6ff" font-family="Segoe UI, sans-serif" font-size="24" font-weight="600" text-anchor="end">★ 5</text>
   <path d="M58 112H852 M58 186H852 M58 260H852" stroke="#30363d" stroke-width="1"/>
-  <path d="M58.0 260.0 L114.7 112.0 L171.4 112.0 L228.1 112.0 L284.9 112.0 L341.6 112.0 L398.3 112.0 L455.0 112.0 L511.7 112.0 L568.4 112.0 L625.1 112.0 L681.9 112.0 L738.6 112.0 L795.3 112.0 L852.0 112.0" fill="none" stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M58.0 260.0 L65.8 161.3 L73.6 161.3 L81.4 161.3 L89.1 161.3 L96.9 161.3 L104.7 161.3 L112.5 161.3 L120.3 161.3 L128.1 161.3 L135.8 161.3 L143.6 161.3 L151.4 161.3 L159.2 161.3 L167.0 161.3 L174.8 161.3 L182.5 161.3 L190.3 161.3 L198.1 161.3 L205.9 161.3 L213.7 161.3 L221.5 161.3 L229.3 161.3 L237.0 161.3 L244.8 161.3 L252.6 161.3 L260.4 161.3 L268.2 161.3 L276.0 161.3 L283.7 161.3 L291.5 161.3 L299.3 161.3 L307.1 161.3 L314.9 161.3 L322.7 161.3 L330.5 161.3 L338.2 161.3 L346.0 161.3 L353.8 161.3 L361.6 161.3 L369.4 161.3 L377.2 161.3 L384.9 161.3 L392.7 161.3 L400.5 161.3 L408.3 161.3 L416.1 161.3 L423.9 161.3 L431.6 161.3 L439.4 161.3 L447.2 161.3 L455.0 161.3 L462.8 161.3 L470.6 161.3 L478.4 161.3 L486.1 161.3 L493.9 161.3 L501.7 161.3 L509.5 161.3 L517.3 161.3 L525.1 161.3 L532.8 161.3 L540.6 161.3 L548.4 161.3 L556.2 161.3 L564.0 161.3 L571.8 161.3 L579.5 161.3 L587.3 161.3 L595.1 161.3 L602.9 161.3 L610.7 161.3 L618.5 161.3 L626.3 161.3 L634.0 161.3 L641.8 161.3 L649.6 161.3 L657.4 161.3 L665.2 161.3 L673.0 161.3 L680.7 112.0 L688.5 112.0 L696.3 112.0 L704.1 112.0 L711.9 112.0 L719.7 112.0 L727.5 112.0 L735.2 112.0 L743.0 112.0 L750.8 112.0 L758.6 112.0 L766.4 112.0 L774.2 112.0 L781.9 112.0 L789.7 112.0 L797.5 112.0 L805.3 112.0 L813.1 112.0 L820.9 112.0 L828.6 112.0 L836.4 112.0 L844.2 112.0 L852.0 112.0" fill="none" stroke="#58a6ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="852.0" cy="112.0" r="5" fill="#58a6ff" stroke="#0d1117" stroke-width="3"/>
   <text x="58" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14">2026-07-17</text>
-  <text x="852" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">2026-07-31</text>
+  <text x="852" y="294" fill="#8b949e" font-family="Segoe UI, sans-serif" font-size="14" text-anchor="end">2026-10-27</text>
 </svg>
