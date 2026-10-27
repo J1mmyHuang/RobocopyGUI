@@ -13,7 +13,10 @@
     <WindowsPackageType>None</WindowsPackageType>
     <!-- Needed even unpackaged: without it dotnet publish leaves out the app's .pri and compiled XAML (.xbf), and the app crashes at startup. -->
     <EnableMsixTooling>true</EnableMsixTooling>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- Framework-dependent: users install the Windows App Runtime from Microsoft instead of us shipping it. If it's missing,
+         the bootstrapper shows a dialog that links to the download rather than the app silently failing to start. -->
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>true</WindowsAppSDKBootstrapAutoInitializeOptions_OnNoMatch_ShowUI>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
@@ -21,15 +24,14 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260921001" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" Version="8.2.251219" />
+    <!-- The 1.8 metapackage (also pulled in by the Toolkit) adds AI, Windows ML and Widgets components this app never calls.
+         Leave their files out: a smaller package, and the Widgets license (unlike the others) lists no redistributable binaries. -->
+    <PackageReference Include="Microsoft.WindowsAppSDK.AI" Version="1.8.79" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.ML" Version="1.8.2223" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.WindowsAppSDK.Widgets" Version="1.8.251231004" ExcludeAssets="all" />
+    <PackageReference Include="System.Numerics.Tensors" Version="9.0.0" ExcludeAssets="all" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RobocopyGui.Core\RobocopyGui.Core.csproj" />
   </ItemGroup>
-  <!-- Self-contained Windows App SDK copies its whole runtime MSIX, including the Windows ML native runtime (onnxruntime + DirectML, ~38 MB).
-       This app calls no AI/ML API, and those DLLs are only loaded by Windows ML (the app manifest doesn't list them), so leave them out. -->
-  <Target Name="ExcludeWindowsMLNativeRuntime" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix" DependsOnTargets="GetExtractMicrosoftWindowsAppSDKMsixFilesInputs">
-    <ItemGroup>
-      <MicrosoftWindowsAppSDKFilesExcluded Include="$(MicrosoftWindowsAppSDKMsixContent)\onnxruntime.dll;$(MicrosoftWindowsAppSDKMsixContent)\onnxruntime_providers_shared.dll;$(MicrosoftWindowsAppSDKMsixContent)\DirectML.dll" />
-    </ItemGroup>
-  </Target>
 </Project>

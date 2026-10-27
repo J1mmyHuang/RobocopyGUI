@@ -19,8 +19,11 @@
 ## 系统要求与 Robocopy
 
 - 需要 Windows 10 1809 或更高版本、Windows 11（x64），以及系统自带的 `robocopy.exe`。
-- 需要安装 [.NET 10 运行时（x64）](https://dotnet.microsoft.com/download/dotnet/10.0)（.NET Runtime 或 Windows Desktop Runtime 均可）。Windows App SDK 已随程序附带，无需另装。
-- 发布版是一个 zip 压缩包，解压后运行 `RobocopyGUI\RobocopyGUI.exe`，无需安装。
+- 需要安装两个 Microsoft 运行库（x64），程序不随包附带：
+  - [.NET 10 运行时](https://dotnet.microsoft.com/download/dotnet/10.0)（.NET Runtime 或 Windows Desktop Runtime 均可）；
+  - [Windows App Runtime 1.8](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads)。
+- 缺少上述运行库时，按设计程序启动会弹出提示并给出下载链接（缺 .NET 时由 .NET 启动器提示，缺 Windows App Runtime 时由 Windows App SDK 的引导程序提示）。**这一行为尚未在未安装运行库的电脑上验证**；如果双击后程序没有任何反应，请先手动安装上面两个运行库。
+- 发布版是一个约 10 MB 的 zip 压缩包，解压后运行 `RobocopyGUI\RobocopyGUI.exe`，无需安装。
 - 本项目仅调用用户电脑中已有的 `robocopy.exe`，不包含、不复制、也不分发 Robocopy 或其他 Windows 系统组件。
 - Robocopy 及 Windows 系统组件的权利归 Microsoft 所有，并适用其各自的许可条款。
 
@@ -42,7 +45,7 @@ dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
 .\RobocopyGui.WinUI\bin\Debug\net10.0-windows10.0.19041.0\win-x64\RobocopyGUI.exe
 ```
 
-> 程序为免安装（unpackaged）的 x64 应用，框架依赖 .NET 10，自带 Windows App SDK 1.8（不含未使用的 Windows ML 运行库）。如需发布无需安装 .NET 的版本，可改为自包含模式；代价是体积会增大。
+> 程序为免安装（unpackaged）的 x64 应用，依赖用户系统中安装的 .NET 10 运行时和 Windows App Runtime 1.8，发布包里只有程序本身和必要的小型引导/投影库。
 
 ### 经典版（WinForms）
 
