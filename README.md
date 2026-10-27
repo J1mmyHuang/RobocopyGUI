@@ -4,19 +4,23 @@
 
 ## 功能
 
-- 分步骤向导：路径选择、扫描、复制、校验和报告
-- 基于实际字节数的复制进度
-- 基于实际读取字节数的哈希校验进度
+- WinUI 3 / Fluent 2 原生界面（Mica 背景），跟随 Windows 明暗主题
+- 分步骤显示任务进度：路径选择、扫描、复制、校验、（剪切时）删除源文件、报告
+- 复制与剪切两种模式：
+  - 开启完整性校验的剪切：全部文件复制并校验一致后，才删除源文件；复制失败、校验异常或中途停止时不删除任何源文件
+  - 关闭校验的剪切：使用 Robocopy `/MOVE`，复制成功后立即删除源文件；开始前会再次确认
+- 基于实际字节数的复制进度，以及基于实际读取字节数的哈希校验进度
 - 支持 MD5、SHA-1、SHA-256 和 SHA-512
 - 支持中途停止复制或校验
-- 详细文件日志区域可以折叠
+- 可以把文件夹拖到窗口中设为源文件夹
+- “高级参数”中显示实际执行的 Robocopy 命令
 - 显示异常文件，并支持导出 CSV 报告
-- 深色界面，默认使用得意黑（Smiley Sans）字体
 
 ## 系统要求与 Robocopy
 
-- 需要 Windows 10 或 Windows 11，以及系统自带的 `robocopy.exe`。
-- 运行发布版 EXE 需要安装 [.NET 10 Windows Desktop Runtime（x64）](https://dotnet.microsoft.com/download/dotnet/10.0)；当前发布为单文件、框架依赖版本。
+- 需要 Windows 10 1809 或更高版本、Windows 11（x64），以及系统自带的 `robocopy.exe`。
+- 需要安装 [.NET 10 运行时（x64）](https://dotnet.microsoft.com/download/dotnet/10.0)（.NET Runtime 或 Windows Desktop Runtime 均可）。Windows App SDK 已随程序附带，无需另装。
+- 发布版是一个 zip 压缩包，解压后运行 `RobocopyGUI\RobocopyGUI.exe`，无需安装。
 - 本项目仅调用用户电脑中已有的 `robocopy.exe`，不包含、不复制、也不分发 Robocopy 或其他 Windows 系统组件。
 - Robocopy 及 Windows 系统组件的权利归 Microsoft 所有，并适用其各自的许可条款。
 
@@ -29,15 +33,26 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\build.ps1
 ```
 
-编译结果位于 `publish\RobocopyGUI.exe`。
+编译结果位于 `publish\RobocopyGUI\RobocopyGUI.exe`，同时生成可上传到 Release 的 `publish\RobocopyGUI-win-x64.zip`。构建只需要 .NET 10 SDK，不需要 Visual Studio。
 
-如果只需要生成框架依赖版本，也可以执行：
+开发时也可以直接构建并运行：
 
 ```powershell
-dotnet build .\RobocopyGui.csproj -c Release
-``` 
+dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
+.\RobocopyGui.WinUI\bin\Debug\net10.0-windows10.0.19041.0\win-x64\RobocopyGUI.exe
+```
 
-> 当前项目目标框架为 `.NET 10`（`net10.0-windows`）。如需发布无需安装 .NET Runtime 的版本，可在发布时改为自包含模式；代价是 EXE 文件体积会增大。
+> 程序为免安装（unpackaged）的 x64 应用，框架依赖 .NET 10，自带 Windows App SDK 1.8（不含未使用的 Windows ML 运行库）。如需发布无需安装 .NET 的版本，可改为自包含模式；代价是体积会增大。
+
+### 经典版（WinForms）
+
+`RobocopyGui.csproj` 是原来的 WinForms 界面，只支持复制，与新版共用同一个 `RobocopyGui.Core`。如需构建单文件版本：
+
+```powershell
+.\build.ps1 -Classic
+```
+
+结果位于 `publish\classic\RobocopyGUI.exe`，运行需要 .NET 10 Windows Desktop Runtime（x64）。
 
 ### 测试
 
@@ -47,26 +62,21 @@ dotnet build .\RobocopyGui.csproj -c Release
 dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Release
 ```
 
-### WinUI 3 预览版
-
-`RobocopyGui.WinUI` 是按 WinUI 3 / Fluent 2 重做的新界面（Mica 背景、跟随系统明暗主题），与 WinForms 版共用 `RobocopyGui.Core`。除复制外还提供“剪切”模式：开启完整性校验时，只在全部文件校验一致后删除源文件；关闭校验时使用 Robocopy `/MOVE`，开始前会再次确认。
-
-预览版为免安装（unpackaged）、自包含 Windows App SDK 1.8 的 x64 程序，只需 .NET 10 SDK，不需要 Visual Studio：
-
-```powershell
-dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
-.\RobocopyGui.WinUI\bin\Debug\net10.0-windows10.0.19041.0\win-x64\RobocopyGUI.WinUI.exe
-```
-
-预览版尚未加入 `build.ps1` 与 Release 发布流程。
-
 ## 使用说明
 
-1. 选择源文件夹和目标文件夹。
-2. 扫描文件并确认待复制内容。
-3. 执行复制，观察真实字节进度。
-4. 按需开启哈希校验，并选择校验算法。
-5. 查看结果，必要时导出 CSV 报告。
+1. 选择（或拖入）源文件夹，再选择目标文件夹。
+2. 选择“复制”或“剪切”，按需开启或关闭完整性校验并选择算法。
+3. 点击“开始”，观察扫描、复制、校验的真实进度；剪切会先弹出确认。
+4. 查看结果和异常文件，必要时导出 CSV 报告。
+
+> 注意：目前复制的是源文件夹“里面的内容”，不会在目标文件夹下再建一个同名文件夹，详见下方“已知问题”。
+
+## 已知问题
+
+以下问题已确认，计划在后续版本修复：
+
+1. **只能选择文件夹，且不会在目标中创建同名文件夹。** 目前不能选择单个文件；复制时只把源文件夹里的内容放进目标文件夹（这是 `robocopy 源 目标` 的默认行为）。例如把 `D:\照片` 复制到 `E:\备份`，结果是 `E:\备份\2026\…`，而不是 `E:\备份\照片\2026\…`。临时办法：在目标框中直接输入 `E:\备份\照片`（不存在时会自动创建）。
+2. **剪切同样不会在目标中创建同名文件夹，并且会删除源文件夹本身。** 剪切只移动源文件夹里的内容；开启完整性校验时，校验通过后还会删除已清空的源文件夹（包括源文件夹本身），看起来像整个文件夹“消失”了。计划改为与资源管理器一致：在目标中创建同名文件夹后再移动。
 
 ## 发布版本
 
@@ -76,13 +86,13 @@ dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
 
 以下为计划中的改进方向，具体实现会根据实际需求与开发进度调整：
 
-- 构建更现代、更完善的 UI 界面；
-- 支持明暗模式手动切换，或跟随 Windows 系统主题自动切换；
+- 修复上方“已知问题”中的两项，并支持选择单个文件；
+- 支持明暗模式手动切换（目前跟随 Windows 系统主题）；
 - 支持中文与英文界面切换。
 
 ## 字体致谢
 
-本项目界面使用 [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans) 字体。字体项目由 atelier-anchor 维护，并依据 [SIL Open Font License 1.1](https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE) 发布。感谢字体作者和贡献者提供这款优秀的开源字体。
+本项目经典版（WinForms）界面使用 [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans) 字体。字体项目由 atelier-anchor 维护，并依据 [SIL Open Font License 1.1](https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE) 发布。感谢字体作者和贡献者提供这款优秀的开源字体。
 
 ## 开发致谢
 

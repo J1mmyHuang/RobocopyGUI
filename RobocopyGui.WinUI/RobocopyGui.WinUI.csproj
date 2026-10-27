@@ -5,12 +5,14 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <RootNamespace>RobocopyGui.WinUI</RootNamespace>
-    <AssemblyName>RobocopyGUI.WinUI</AssemblyName>
+    <AssemblyName>RobocopyGUI</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Platforms>x64</Platforms>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWinUI>true</UseWinUI>
     <WindowsPackageType>None</WindowsPackageType>
+    <!-- Needed even unpackaged: without it dotnet publish leaves out the app's .pri and compiled XAML (.xbf), and the app crashes at startup. -->
+    <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
@@ -23,4 +25,11 @@
   <ItemGroup>
     <ProjectReference Include="..\RobocopyGui.Core\RobocopyGui.Core.csproj" />
   </ItemGroup>
+  <!-- Self-contained Windows App SDK copies its whole runtime MSIX, including the Windows ML native runtime (onnxruntime + DirectML, ~38 MB).
+       This app calls no AI/ML API, and those DLLs are only loaded by Windows ML (the app manifest doesn't list them), so leave them out. -->
+  <Target Name="ExcludeWindowsMLNativeRuntime" BeforeTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromMsix" DependsOnTargets="GetExtractMicrosoftWindowsAppSDKMsixFilesInputs">
+    <ItemGroup>
+      <MicrosoftWindowsAppSDKFilesExcluded Include="$(MicrosoftWindowsAppSDKMsixContent)\onnxruntime.dll;$(MicrosoftWindowsAppSDKMsixContent)\onnxruntime_providers_shared.dll;$(MicrosoftWindowsAppSDKMsixContent)\DirectML.dll" />
+    </ItemGroup>
+  </Target>
 </Project>
