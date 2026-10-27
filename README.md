@@ -39,6 +39,14 @@ dotnet build .\RobocopyGui.csproj -c Release
 
 > 当前项目目标框架为 `.NET 10`（`net10.0-windows`）。如需发布无需安装 .NET Runtime 的版本，可在发布时改为自包含模式；代价是 EXE 文件体积会增大。
 
+### 测试
+
+复制计划、Robocopy 调用和哈希校验位于不依赖界面的 `RobocopyGui.Core` 类库中。运行回归测试（需要系统自带的 Robocopy）：
+
+```powershell
+dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Release
+```
+
 ## 使用说明
 
 1. 选择源文件夹和目标文件夹。

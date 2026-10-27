@@ -8,4 +8,12 @@
     <AssemblyName>RobocopyGUI</AssemblyName>
     <RootNamespace>RobocopyGui</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="RobocopyGui.Core\**;tests\**" />
+    <None Remove="RobocopyGui.Core\**;tests\**" />
+    <EmbeddedResource Remove="RobocopyGui.Core\**;tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="RobocopyGui.Core\RobocopyGui.Core.csproj" />
+  </ItemGroup>
 </Project>
