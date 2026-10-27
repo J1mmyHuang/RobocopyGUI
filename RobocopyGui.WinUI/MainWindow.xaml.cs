@@ -239,7 +239,7 @@ namespace RobocopyGui.WinUI
         async void AboutButton_Click(object sender, RoutedEventArgs e)
         {
             string version = typeof(MainWindow).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? ""; int plus = version.IndexOf('+');
-            string build = plus >= 0 && version.Length >= plus + 8 ? "构建自提交 " + version.Substring(plus + 1, 7) : "版本 " + version;
+            string build = "版本 " + (plus >= 0 ? version.Substring(0, plus) : version) + (plus >= 0 && version.Length >= plus + 8 ? " · 构建自提交 " + version.Substring(plus + 1, 7) : "");
             var body = new StackPanel { Spacing = 12 };
             foreach (string line in new[]
             {

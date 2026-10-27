@@ -91,7 +91,15 @@ dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Rele
 以下为计划中的改进方向，具体实现会根据实际需求与开发进度调整：
 
 - 支持明暗模式手动切换（目前跟随 Windows 系统主题）；
-- 支持中文与英文界面切换。
+- 支持中文与英文界面切换；
+- 改进“复制 / 剪切”切换的无障碍支持，让讲述人能读出当前选中的模式。
+
+已在 V0.2.0 完成：
+
+- 构建更现代、更完善的 UI 界面：改用 WinUI 3 / Fluent 2；
+- 跟随 Windows 系统主题自动切换明暗模式；
+- 复制时在目标中创建同名文件夹，并支持选择单个文件（[#1](https://github.com/J1mmyHuang/RobocopyGUI/issues/1)）；
+- 新增剪切模式；发布包缩小到约 10 MB。
 
 ## 字体致谢
 
@@ -99,7 +107,7 @@ dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Rele
 
 ## 开发致谢
 
-本项目的界面设计、功能实现和文档整理过程中使用了 [ChatGPT Codex](https://openai.com/codex/) 的协助。最终代码、构建结果和公开发布内容由项目维护者审阅并负责。
+本项目的界面设计、功能实现和文档整理过程中使用了 [ChatGPT Codex](https://openai.com/codex/) 和 [Claude Code](https://claude.com/claude-code)（Anthropic 的 Claude）的协助。最终代码、构建结果和公开发布内容由项目维护者审阅并负责。
 
 ## 许可证
 
