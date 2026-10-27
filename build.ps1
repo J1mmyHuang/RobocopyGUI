@@ -3,9 +3,7 @@
 
 param(
     [ValidateSet("Debug", "Release")]
-    [string]$Configuration = "Release",
-    # Build the original WinForms version (single-file EXE) instead of the WinUI 3 app.
-    [switch]$Classic
+    [string]$Configuration = "Release"
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,28 +15,10 @@ if ($LASTEXITCODE -ne 0 -or -not $sdkVersion.StartsWith("10.")) {
 $publishRoot = Join-Path $PSScriptRoot "publish"
 
 # The license, its section 7 permission and the third-party notices travel with every build.
-function Copy-LicenseFiles([string]$destination, [switch]$WithThirdParty) {
-    Copy-Item (Join-Path $PSScriptRoot "LICENSE"), (Join-Path $PSScriptRoot "LICENSE-EXCEPTION.txt") $destination
-    if ($WithThirdParty) {
-        Copy-Item (Join-Path $PSScriptRoot "THIRD-PARTY-NOTICES.md") $destination
-        Copy-Item (Join-Path $PSScriptRoot "licenses") $destination -Recurse
-    }
-}
-
-if ($Classic) {
-    $project = Join-Path $PSScriptRoot "RobocopyGui.csproj"
-    $output = Join-Path $publishRoot "classic"
-
-    dotnet publish $project -c $Configuration -r win-x64 --self-contained false `
-        -p:PublishSingleFile=true -p:EnableWindowsTargeting=true -o $output
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "dotnet publish failed with exit code $LASTEXITCODE."
-    }
-
-    Copy-LicenseFiles $output
-    Write-Host "Build complete: $output\RobocopyGUI.exe" -ForegroundColor Green
-    return
+# (The classic WinForms UI is archived at tag classic-winforms; build it from there with .\build.ps1 -Classic.)
+function Copy-LicenseFiles([string]$destination) {
+    Copy-Item (Join-Path $PSScriptRoot "LICENSE"), (Join-Path $PSScriptRoot "LICENSE-EXCEPTION.txt"), (Join-Path $PSScriptRoot "THIRD-PARTY-NOTICES.md") $destination
+    Copy-Item (Join-Path $PSScriptRoot "licenses") $destination -Recurse
 }
 
 $project = Join-Path $PSScriptRoot "RobocopyGui.WinUI\RobocopyGui.WinUI.csproj"
@@ -57,7 +37,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet publish failed with exit code $LASTEXITCODE."
 }
 
-Copy-LicenseFiles $output -WithThirdParty
+Copy-LicenseFiles $output
 
 # The archive keeps the RobocopyGUI folder as its root, so extracting it doesn't scatter files.
 Compress-Archive -Path $output -DestinationPath $archive -Force

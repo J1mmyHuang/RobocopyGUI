@@ -76,7 +76,7 @@ namespace RobocopyGui.Core
 
         public void Reset() { plan = new List<FilePlan>(); records = new List<HashRecord>(); progress.Reset(); SourceDeletionSkipped = false; RemainingSourceFiles = 0; }
 
-        // Used by the classic WinForms UI: keeps Robocopy's "copy the folder's contents" semantics.
+        // Robocopy's own "copy the folder's contents" semantics, as the classic WinForms UI (archived at tag classic-winforms) used.
         public Task RunAsync(string source, string destination, bool verify, string algorithm, int blockSize, CancellationToken token)
         {
             return RunAsync(new RunOptions { Source = source, Destination = destination, Verify = verify, Algorithm = algorithm, BlockSize = blockSize, IncludeSourceFolder = false }, token);

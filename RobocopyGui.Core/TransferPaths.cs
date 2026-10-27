@@ -21,7 +21,7 @@ namespace RobocopyGui.Core
 
         public bool IsDriveRoot { get { return Kind == SourceKind.Folder && Path.GetFileName(SourceFolder).Length == 0; } }
 
-        // includeSourceFolder = false keeps Robocopy's own semantics (copy the folder's contents), used by the classic WinForms UI.
+        // includeSourceFolder = false keeps Robocopy's own semantics (copy the folder's contents), as the classic WinForms UI (archived at tag classic-winforms) did.
         public static TransferPaths Resolve(string source, string destination, bool includeSourceFolder = true)
         {
             string full = Trim(Path.GetFullPath(source)), target = Trim(Path.GetFullPath(destination));

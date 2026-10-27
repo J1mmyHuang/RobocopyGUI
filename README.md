@@ -49,15 +49,9 @@ dotnet build .\RobocopyGui.WinUI\RobocopyGui.WinUI.csproj -c Debug
 
 > 程序为免安装（unpackaged）的 x64 应用，依赖用户系统中安装的 .NET 10 运行时和 Windows App Runtime 1.8，发布包里只有程序本身、必要的小型引导/投影库，以及 `LICENSE`、`LICENSE-EXCEPTION.txt`、`THIRD-PARTY-NOTICES.md` 和 `licenses` 文件夹。
 
-### 经典版（WinForms）
+### 经典版（WinForms，已归档）
 
-`RobocopyGui.csproj` 是原来的 WinForms 界面，只支持复制文件夹，并保持 Robocopy 本身的行为（复制源文件夹里的内容，不在目标中创建同名文件夹）；与新版共用同一个 `RobocopyGui.Core`。如需构建单文件版本：
-
-```powershell
-.\build.ps1 -Classic
-```
-
-结果位于 `publish\classic\RobocopyGUI.exe`，运行需要 .NET 10 Windows Desktop Runtime（x64）。
+原来的 WinForms 界面已归档，不再随主分支构建和发布；V0.1.7 及更早的 Release 就是这个版本。它保留在 Git 标签 [`classic-winforms`](https://github.com/J1mmyHuang/RobocopyGUI/tree/classic-winforms) 中，需要时可以检出该标签，再运行 `.\build.ps1 -Classic` 构建（运行需要 .NET 10 Windows Desktop Runtime，x64）。
 
 ### 测试
 
@@ -101,7 +95,7 @@ dotnet test .\tests\RobocopyGui.Core.Tests\RobocopyGui.Core.Tests.csproj -c Rele
 
 ## 字体致谢
 
-本项目经典版（WinForms）界面使用 [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans) 字体。字体项目由 atelier-anchor 维护，并依据 [SIL Open Font License 1.1](https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE) 发布。感谢字体作者和贡献者提供这款优秀的开源字体。
+本项目已归档的经典版（WinForms，V0.1.7 及更早版本）界面使用 [得意黑 Smiley Sans](https://github.com/atelier-anchor/smiley-sans) 字体。字体项目由 atelier-anchor 维护，并依据 [SIL Open Font License 1.1](https://github.com/atelier-anchor/smiley-sans/blob/main/LICENSE) 发布。感谢字体作者和贡献者提供这款优秀的开源字体。
 
 ## 开发致谢
 
