@@ -16,13 +16,13 @@
 ## 系统要求与 Robocopy
 
 - 需要 Windows 10 或 Windows 11，以及系统自带的 `robocopy.exe`。
-- 运行发布版 EXE 需要安装 [.NET 8 Windows Desktop Runtime（x64）](https://dotnet.microsoft.com/download/dotnet/8.0)；当前发布为单文件、框架依赖版本。
+- 运行发布版 EXE 需要安装 [.NET 10 Windows Desktop Runtime（x64）](https://dotnet.microsoft.com/download/dotnet/10.0)；当前发布为单文件、框架依赖版本。
 - 本项目仅调用用户电脑中已有的 `robocopy.exe`，不包含、不复制、也不分发 Robocopy 或其他 Windows 系统组件。
 - Robocopy 及 Windows 系统组件的权利归 Microsoft 所有，并适用其各自的许可条款。
 
 ## 构建
 
-需要 Windows、.NET 8 SDK 和系统自带的 Robocopy。进入源代码目录后执行：
+需要 Windows、.NET 10 SDK 和系统自带的 Robocopy。进入源代码目录后执行：
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
@@ -34,10 +34,10 @@ Set-ExecutionPolicy -Scope Process Bypass
 如果只需要生成框架依赖版本，也可以执行：
 
 ```powershell
-dotnet build .\RobocopyGUI.csproj -c Release
+dotnet build .\RobocopyGui.csproj -c Release
 ``` 
 
-> 当前项目目标框架为 `.NET 8`（`net8.0-windows`）。如需发布无需安装 .NET Runtime 的版本，可在发布时改为自包含模式；代价是 EXE 文件体积会增大。
+> 当前项目目标框架为 `.NET 10`（`net10.0-windows`）。如需发布无需安装 .NET Runtime 的版本，可在发布时改为自包含模式；代价是 EXE 文件体积会增大。
 
 ## 使用说明
 
@@ -49,7 +49,7 @@ dotnet build .\RobocopyGUI.csproj -c Release
 
 ## 发布版本
 
-可执行文件不放在源代码目录中，而是作为 GitHub Release 附件发布。下载程序请前往仓库的 [Releases 页面](https://github.com/J1mmyHuang/RobocopyGui/releases)。
+可执行文件不放在源代码目录中，而是作为 GitHub Release 附件发布。下载程序请前往仓库的 [Releases 页面](https://github.com/J1mmyHuang/RobocopyGUI/releases)。
 
 ## 后续计划
 
