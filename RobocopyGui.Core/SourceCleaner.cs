@@ -7,9 +7,10 @@ using System.Threading;
 namespace RobocopyGui.Core
 {
     // Deletes source files only after their hashes matched the destination, then removes source folders left empty (as robocopy /MOVE does).
+    // For a single moved file removeEmptyFolders is false: its folder and everything else in it stay.
     public static class SourceCleaner
     {
-        public static void DeleteVerified(string sourceRoot, IReadOnlyList<FilePlan> plan, IReadOnlyList<HashRecord> records, WorkflowProgress progress, Action<string> log, CancellationToken token)
+        public static void DeleteVerified(string sourceRoot, IReadOnlyList<FilePlan> plan, IReadOnlyList<HashRecord> records, WorkflowProgress progress, Action<string> log, CancellationToken token, bool removeEmptyFolders = true)
         {
             string root = Path.GetFullPath(sourceRoot); if (root.Length > 3) root = root.TrimEnd('\\'); string prefix = root.EndsWith("\\") ? root : root + "\\";
             var verified = new HashSet<string>(records.Where(r => r.Result == "通过").Select(r => r.RelativePath), StringComparer.OrdinalIgnoreCase);
@@ -29,7 +30,9 @@ namespace RobocopyGui.Core
                 }
                 catch (Exception ex) { progress.CountKept(); log("无法删除源文件 " + item.RelativePath + "：" + ex.Message); }
             }
-            int folders = RemoveEmptyFolders(root, token); log("已删除 " + progress.DeleteDone + " 个源文件和 " + folders + " 个空文件夹" + (progress.DeleteKept > 0 ? "，保留 " + progress.DeleteKept + " 个源文件。" : "。"));
+            string kept = progress.DeleteKept > 0 ? "，保留 " + progress.DeleteKept + " 个源文件。" : "。";
+            if (!removeEmptyFolders) { log("已删除 " + progress.DeleteDone + " 个源文件" + kept); return; }
+            int folders = RemoveEmptyFolders(root, token); log("已删除 " + progress.DeleteDone + " 个源文件和 " + folders + " 个空文件夹" + kept);
         }
 
         public static int RemainingSources(IEnumerable<FilePlan> plan) { return plan.Count(p => File.Exists(p.Source)); }

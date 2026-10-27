@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -40,6 +41,9 @@ namespace RobocopyGui.WinUI
         Phase phase = Phase.Idle;
         WorkflowStage stage = WorkflowStage.Scanning;
         RunOptions current;
+        TransferPaths runPaths, preview;   // what the running/finished task uses; what the current input would use
+        SourceKind? previewKind;
+        int previewVersion;
         string failureMessage, inputError, notice;
         bool dragging;
 
@@ -88,11 +92,39 @@ namespace RobocopyGui.WinUI
 
         RunOptions View { get { return phase == Phase.Idle || current == null ? Selected() : current; } }
 
+        TransferPaths Paths { get { return phase == Phase.Idle || runPaths == null ? preview : runPaths; } }
+
+        SourceKind? Kind { get { return phase == Phase.Idle || runPaths == null ? previewKind : runPaths.Kind; } }
+
+        string KindName { get { return Kind == SourceKind.File ? "源文件" : "源文件夹"; } }
+
+        // Robocopy's move switch differs: /MOV for one file (keeps its folder), /MOVE for a folder.
+        string MoveSwitch { get { return RobocopyRunner.MoveSwitch(Kind ?? SourceKind.Folder); } }
+
         static string Clean(string text) { return (text ?? "").Trim().Trim('"'); }
 
         // ---------- input ----------
 
-        void Input_Changed(object sender, TextChangedEventArgs e) { if (ready) ToIdle(); }
+        void Input_Changed(object sender, TextChangedEventArgs e) { if (!ready) return; UpdatePreview(); ToIdle(); }
+
+        // Telling a file from a folder touches the disk, which can stall on an unreachable network path, so it runs off the UI thread.
+        async void UpdatePreview()
+        {
+            string source = Clean(SourceBox.Text), destination = Clean(DestinationBox.Text); int version = ++previewVersion;
+            var inspected = source.Length == 0 ? Tuple.Create<SourceKind?, TransferPaths>(null, null) : await Task.Run(() => Inspect(source, destination));
+            if (version != previewVersion) return;
+            previewKind = inspected.Item1; preview = inspected.Item2; Refresh();
+        }
+
+        static Tuple<SourceKind?, TransferPaths> Inspect(string source, string destination)
+        {
+            try
+            {
+                SourceKind? kind = File.Exists(source) ? SourceKind.File : Directory.Exists(source) ? SourceKind.Folder : (SourceKind?)null;
+                return Tuple.Create(kind, kind != null && destination.Length > 0 ? TransferPaths.Resolve(source, destination) : null);
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is NotSupportedException || ex is IOException || ex is UnauthorizedAccessException) { return Tuple.Create<SourceKind?, TransferPaths>(null, null); }
+        }
         void Option_Changed(object sender, SelectionChangedEventArgs e) { if (ready) ToIdle(); }
         void HashToggle_Toggled(object sender, RoutedEventArgs e) { if (!ready) return; HashCard.IsExpanded = HashToggle.IsOn; ToIdle(); }
 
@@ -104,7 +136,9 @@ namespace RobocopyGui.WinUI
             phase = Phase.Idle; current = null; inputError = null; notice = null; Refresh();
         }
 
-        async void BrowseSource_Click(object sender, RoutedEventArgs e) { string path = await PickFolderAsync(); if (path != null) SourceBox.Text = path; }
+        void BrowseSource_Click(SplitButton sender, SplitButtonClickEventArgs args) { PickSourceFolder_Click(sender, null); }
+        async void PickSourceFolder_Click(object sender, RoutedEventArgs e) { string path = await PickFolderAsync(); if (path != null) SourceBox.Text = path; }
+        async void PickSourceFile_Click(object sender, RoutedEventArgs e) { string path = await PickFileAsync(); if (path != null) SourceBox.Text = path; }
         async void BrowseDestination_Click(object sender, RoutedEventArgs e) { string path = await PickFolderAsync(); if (path != null) DestinationBox.Text = path; }
 
         async Task<string> PickFolderAsync()
@@ -114,10 +148,17 @@ namespace RobocopyGui.WinUI
             var folder = await picker.PickSingleFolderAsync(); return folder != null ? folder.Path : null;
         }
 
+        async Task<string> PickFileAsync()
+        {
+            var picker = new FileOpenPicker(); picker.FileTypeFilter.Add("*");
+            WinRT.Interop.InitializeWithWindow.Initialize(picker, WinRT.Interop.WindowNative.GetWindowHandle(this));
+            var file = await picker.PickSingleFileAsync(); return file != null ? file.Path : null;
+        }
+
         void LocationCard_DragOver(object sender, DragEventArgs e)
         {
             if (phase == Phase.Running || !e.DataView.Contains(StandardDataFormats.StorageItems)) { e.AcceptedOperation = DataPackageOperation.None; return; }
-            e.AcceptedOperation = DataPackageOperation.Link; e.DragUIOverride.Caption = "设为源文件夹";
+            e.AcceptedOperation = DataPackageOperation.Link; e.DragUIOverride.Caption = "设为源";
             if (!dragging) { dragging = true; Refresh(); }
         }
 
@@ -132,8 +173,8 @@ namespace RobocopyGui.WinUI
             dragging = false;
             if (phase != Phase.Running && e.DataView.Contains(StandardDataFormats.StorageItems))
             {
-                var folder = (await e.DataView.GetStorageItemsAsync()).OfType<StorageFolder>().FirstOrDefault();
-                if (folder != null) SourceBox.Text = folder.Path; else inputError = "只能把文件夹拖到源位置。";
+                var items = await e.DataView.GetStorageItemsAsync();
+                if (items.Count == 1) SourceBox.Text = items[0].Path; else inputError = "一次只能拖入一个文件夹或一个文件。";
             }
             Refresh();
         }
@@ -148,10 +189,11 @@ namespace RobocopyGui.WinUI
         async void StartButton_Click(object sender, RoutedEventArgs e)
         {
             if (phase == Phase.Running) return;
-            var o = Selected(); inputError = CopyWorkflow.ValidatePaths(o.Source, o.Destination); notice = null;
+            var o = Selected(); inputError = CopyWorkflow.Validate(o); notice = null;
             if (inputError != null) { Refresh(); return; }
-            if (o.Mode == TransferMode.Move && !await ConfirmMoveAsync(o)) return;
-            current = o; phase = Phase.Running; stage = WorkflowStage.Scanning; failureMessage = null;
+            var paths = o.ResolvePaths();
+            if (o.Mode == TransferMode.Move && !await ConfirmMoveAsync(o, paths)) return;
+            current = o; runPaths = paths; phase = Phase.Running; stage = WorkflowStage.Scanning; failureMessage = null;
             workflow.Reset(); logs.Clear(); exceptions.Clear(); speed.Reset();
             string ignored; while (pendingLogs.TryDequeue(out ignored)) { } HashRecord skipped; while (pendingFailures.TryDequeue(out skipped)) { }
             cancellation = new CancellationTokenSource(); Refresh();
@@ -163,19 +205,24 @@ namespace RobocopyGui.WinUI
 
         void StopButton_Click(object sender, RoutedEventArgs e) { if (cancellation != null) cancellation.Cancel(); workflow.KillRobocopy(); }
 
-        async Task<bool> ConfirmMoveAsync(RunOptions o)
+        async Task<bool> ConfirmMoveAsync(RunOptions o, TransferPaths p)
         {
-            bool raw = o.UsesRobocopyMove; var body = new StackPanel { Spacing = 12 };
+            bool raw = o.UsesRobocopyMove, file = p.Kind == SourceKind.File; string move = RobocopyRunner.MoveSwitch(p.Kind); var body = new StackPanel { Spacing = 12 };
+            string first = raw
+                ? (file ? "已关闭完整性校验。Robocopy /MOV 会在文件复制成功后立即删除源文件，不比对文件内容；它所在的文件夹不受影响。"
+                        : "已关闭完整性校验。Robocopy /MOVE 会在每个文件复制成功后立即删除源文件，并删除移空的文件夹（包括源文件夹本身），不比对文件内容。")
+                : (file ? "文件会移动到下面的位置：复制完成并通过 " + o.Algorithm + " 校验后，才删除这个源文件；它所在的文件夹和其中的其他文件不受影响。"
+                        : "整个文件夹会移动到下面的位置：全部文件复制完成并通过 " + o.Algorithm + " 校验后，才删除源文件；删除后变空的文件夹（包括源文件夹本身）也会一并删除。");
             string[] lines = raw
-                ? new[] { "已关闭完整性校验。Robocopy 会在每个文件复制成功后立即删除源文件，不比对文件内容。", "目标中已存在且相同的文件会被跳过，它们的源文件会保留。", "如果需要确认文件完整，请取消并打开“完整性校验”。" }
-                : new[] { "全部文件复制完成并通过 " + o.Algorithm + " 校验后，才会删除源文件夹中的文件；删除后变空的文件夹（包括源文件夹本身）也会一并删除。", "复制失败、校验出现异常，或你终止任务时，不会删除任何源文件。" };
+                ? new[] { first, "目标中已存在且相同的文件会被跳过，它们的源文件会保留。", "如果需要确认文件完整，请取消并打开“完整性校验”。" }
+                : new[] { first, "复制失败、校验出现异常，或你终止任务时，不会删除任何源文件。" };
             foreach (string line in lines) body.Children.Add(new TextBlock { Text = line, TextWrapping = TextWrapping.Wrap });
-            var paths = new TextBlock { Text = "源：" + o.Source + "\n目标：" + o.Destination + (raw ? "\n参数：" + RobocopyRunner.Switches(true) : ""), FontFamily = (FontFamily)Root.Resources["MonoFont"], FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Theme.Brush("TextFillColorSecondaryBrush") };
+            var paths = new TextBlock { Text = "源：" + o.Source + "\n移动到：" + p.Result + (raw ? "\n参数：" + RobocopyRunner.Switches(p.Kind, true) : ""), FontFamily = (FontFamily)Root.Resources["MonoFont"], FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Theme.Brush("TextFillColorSecondaryBrush") };
             body.Children.Add(new Border { Child = paths, Padding = new Thickness(12, 10, 12, 10), Background = Theme.Brush("CardBackgroundFillColorSecondaryBrush"), BorderBrush = Theme.Brush("CardStrokeColorDefaultBrush"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(4) });
             var dialog = new ContentDialog
             {
                 XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Style = (Style)Application.Current.Resources["DefaultContentDialogStyle"],
-                Title = raw ? "使用 Robocopy /MOVE 剪切？" : "确认剪切？", Content = body,
+                Title = raw ? "使用 Robocopy " + move + " 剪切？" : "确认剪切？", Content = body,
                 PrimaryButtonText = raw ? "仍然剪切" : "开始剪切", CloseButtonText = "取消", DefaultButton = raw ? ContentDialogButton.Close : ContentDialogButton.Primary,
             };
             return await dialog.ShowAsync() == ContentDialogResult.Primary;
@@ -213,16 +260,23 @@ namespace RobocopyGui.WinUI
             foreach (Control c in new Control[] { SourceBox, DestinationBox, BrowseSource, BrowseDestination, ModeSelector, HashToggle }) c.IsEnabled = !running;
             AlgorithmCard.IsEnabled = BlockCard.IsEnabled = HashToggle.IsOn && !running;
             ModeIcon.Glyph = o.Mode == TransferMode.Move ? GlyphCut : GlyphCopy;
-            ModeCard.Description = raw ? "剪切：/MOVE 复制后立即删除源文件" : moveHash ? "剪切：全部校验通过后删除源文件" : "复制：保留源文件夹中的文件";
+            var paths = Paths;
+            ModeCard.Description = raw ? "剪切：" + MoveSwitch + " 复制后立即删除源文件" : moveHash ? "剪切：全部校验通过后删除源文件" : "复制：源文件保持不变";
             HashCard.Description = o.Verify ? "复制完成后比对源与目标文件的哈希值" : "已关闭：不比对源与目标文件的内容";
-            AdvancedCard.Description = "实际参数：" + RobocopyRunner.Switches(raw);
-            CommandText.Text = "robocopy " + RobocopyRunner.BuildArguments(hasSource ? o.Source : "<源文件夹>", hasDest ? o.Destination : "<目标文件夹>", raw);
+            AdvancedCard.Description = "实际参数：" + RobocopyRunner.Switches(Kind ?? SourceKind.Folder, raw);
+            CommandText.Text = "robocopy " + (paths != null ? RobocopyRunner.BuildArguments(paths, raw) : RobocopyRunner.BuildArguments(hasSource ? o.Source : "<源>", hasDest ? o.Destination : "<目标文件夹>", raw));
             DropOverlay.Visibility = dragging ? Visibility.Visible : Visibility.Collapsed;
-            bool recognized = phase == Phase.Idle && hasSource && !hasDest;
-            HintText.Text = running ? "任务运行中，路径已锁定。" : recognized ? "已识别源文件夹。目标文件夹请点击“浏览…”选择。" : "可以把文件夹拖到这里，设为源文件夹。";
-            HintText.Foreground = HintIcon.Foreground = Theme.Brush(recognized ? "AccentTextFillColorPrimaryBrush" : "TextFillColorTertiaryBrush");
+            // The location card always says where the chosen folder or file will actually end up.
+            bool recognized = phase == Phase.Idle && Kind != null && !hasDest, preview = phase == Phase.Idle && paths != null;
+            string verb = o.Mode == TransferMode.Move ? "移动到：" : "复制到：";
+            HintText.Text = running ? "任务运行中，路径已锁定 · " + verb + runPaths.Result
+                : phase != Phase.Idle && runPaths != null ? "目标位置：" + runPaths.Result
+                : recognized ? "已识别" + KindName + "。目标文件夹请点击“浏览…”选择。"
+                : preview ? "将" + verb + paths.Result
+                : "可以把文件夹或文件拖到这里，设为源。";
+            HintText.Foreground = HintIcon.Foreground = Theme.Brush(recognized || preview ? "AccentTextFillColorPrimaryBrush" : "TextFillColorTertiaryBrush");
 
-            PageTitle.Text = o.Mode == TransferMode.Move ? (raw ? "剪切文件（Robocopy /MOVE）" : "剪切文件并验证完整性") : (o.Verify ? "复制文件并验证完整性" : "复制文件");
+            PageTitle.Text = o.Mode == TransferMode.Move ? (raw ? "剪切文件（Robocopy " + MoveSwitch + "）" : "剪切文件并验证完整性") : (o.Verify ? "复制文件并验证完整性" : "复制文件");
             PageSubtitle.Text = Subtitle(o, p, hasSource, hasDest);
             SetBadge(p, hasSource, hasDest, raw);
             SetSteps(o, p, hasSource, hasDest);
@@ -247,14 +301,14 @@ namespace RobocopyGui.WinUI
             switch (phase)
             {
                 case Phase.Idle:
-                    if (dragging) return "松开鼠标即可设为源文件夹。";
-                    if (!hasSource && !hasDest) return "选择源文件夹和目标文件夹，开始前可以调整选项。";
-                    if (!hasDest) return "已识别源文件夹，请选择目标文件夹。";
+                    if (dragging) return "松开鼠标即可设为源。";
+                    if (!hasSource && !hasDest) return "选择一个文件夹或文件，以及目标文件夹；开始前可以调整选项。";
+                    if (!hasDest) return Kind != null ? "已识别" + KindName + "，请选择目标文件夹。" : "请选择目标文件夹。";
                     return moveHash ? "全部文件通过校验后，才会删除源文件。" : raw ? "已关闭完整性校验，复制成功后会立即删除源文件。" : !o.Verify ? "已关闭完整性校验，只复制、不比对文件内容。" : "路径已就绪，确认选项后点击“开始”。";
                 case Phase.Running:
                     switch (stage)
                     {
-                        case WorkflowStage.Scanning: return "正在扫描源文件夹，路径与选项已锁定。";
+                        case WorkflowStage.Scanning: return "正在扫描" + KindName + "，路径与选项已锁定。";
                         case WorkflowStage.Copying: return raw ? "正在移动，复制成功的源文件会立即删除。" : "路径与选项已锁定，Robocopy 正在后台复制。";
                         case WorkflowStage.Verifying: return moveHash ? "复制已完成，正在校验；源文件尚未删除。" : "复制已完成，正在比对源与目标文件的哈希值。";
                         case WorkflowStage.DeletingSource: return "全部文件校验一致，正在删除源文件。";
@@ -303,7 +357,7 @@ namespace RobocopyGui.WinUI
                 else if (phase == Phase.Idle)
                 {
                     if (i == 0 && inputError != null) { state = StepState.Active; desc = "路径有误，请修改后重试"; }
-                    else if (i == 0) { state = hasSource && hasDest ? StepState.Done : StepState.Active; desc = hasSource && hasDest ? "源与目标已就绪" : hasSource ? "已识别源文件夹，请选择目标" : "选择源文件夹与目标位置"; }
+                    else if (i == 0) { state = hasSource && hasDest ? StepState.Done : StepState.Active; desc = hasSource && hasDest ? "源与目标已就绪" : hasSource ? "已识别" + KindName + "，请选择目标" : "选择源与目标位置"; }
                     else { state = StepState.Pending; desc = PendingText(i, o, deleteIndex, final); }
                 }
                 else if (phase == Phase.Completed)
@@ -324,7 +378,7 @@ namespace RobocopyGui.WinUI
         string PendingText(int i, RunOptions o, int deleteIndex, int final)
         {
             if (i == 1) return "统计文件数量与大小";
-            if (i == 2) return o.UsesRobocopyMove ? "/MOVE：复制后删除源文件" : "使用 Windows 内置 Robocopy";
+            if (i == 2) return o.UsesRobocopyMove ? MoveSwitch + "：复制后删除源文件" : "使用 Windows 内置 Robocopy";
             if (i == 3) return o.Algorithm + " · 复制完成后开始";
             if (i == deleteIndex) return phase == Phase.Running ? "校验全部通过后执行" : "只删除校验一致的文件";
             return o.Verify ? "CSV 完整性报告" : o.Mode == TransferMode.Move ? "移动结果" : "复制结果";
@@ -389,19 +443,29 @@ namespace RobocopyGui.WinUI
 
         void SetInfo(RunOptions o, WorkflowProgress p)
         {
-            bool moveHash = o.Mode == TransferMode.Move && o.Verify, raw = o.UsesRobocopyMove;
+            bool moveHash = o.Mode == TransferMode.Move && o.Verify, raw = o.UsesRobocopyMove, file = Kind == SourceKind.File;
             string title = null, message = null; var severity = InfoBarSeverity.Informational;
             if (inputError != null) { title = "路径错误"; message = inputError; severity = InfoBarSeverity.Error; }
             else if (phase == Phase.Idle)
             {
-                if (moveHash) { title = "剪切会删除源文件"; message = "复制并通过 " + o.Algorithm + " 校验后才删除源文件，变空的文件夹也会一并删除；复制失败、校验异常或终止时不会删除。"; severity = InfoBarSeverity.Warning; }
-                else if (raw) { title = "将使用 Robocopy /MOVE"; message = "关闭校验后，每个文件复制成功就会从源文件夹删除，不比对文件内容；目标中已相同的文件会被跳过并保留在源文件夹。"; severity = InfoBarSeverity.Warning; }
+                if (moveHash)
+                {
+                    title = "剪切会删除源文件"; severity = InfoBarSeverity.Warning;
+                    message = file ? "复制并通过 " + o.Algorithm + " 校验后才删除这个源文件，它所在的文件夹和其他文件不受影响；复制失败、校验异常或终止时不会删除。"
+                        : "整个文件夹会移动到目标位置：复制并通过 " + o.Algorithm + " 校验后，才删除源文件和变空的文件夹（包括源文件夹本身）；复制失败、校验异常或终止时不会删除。";
+                }
+                else if (raw)
+                {
+                    title = "将使用 Robocopy " + MoveSwitch; severity = InfoBarSeverity.Warning;
+                    message = file ? "关闭校验后，文件复制成功就会从源位置删除，不比对文件内容；目标中已有相同文件时会跳过，源文件保留。"
+                        : "关闭校验后，每个文件复制成功就会从源文件夹删除，移空的文件夹（包括源文件夹本身）也会删除，不比对文件内容；目标中已相同的文件会被跳过并保留在源文件夹。";
+                }
             }
             else if (phase == Phase.Running)
             {
                 if (moveHash && stage == WorkflowStage.DeletingSource) { title = "正在删除源文件"; message = "只删除已在目标位置校验一致的文件；终止后，尚未删除的源文件会全部保留。"; }
                 else if (moveHash) { title = "源文件尚未删除"; message = "只有全部文件校验一致后，才会开始删除源文件。"; }
-                else if (raw && stage == WorkflowStage.Copying) { title = "源文件正在被删除"; message = "Robocopy /MOVE 会在每个文件复制成功后立即删除源文件。"; severity = InfoBarSeverity.Warning; }
+                else if (raw && stage == WorkflowStage.Copying) { title = "源文件正在被删除"; message = "Robocopy " + MoveSwitch + " 会在文件复制成功后立即删除源文件。"; severity = InfoBarSeverity.Warning; }
             }
             else if (phase == Phase.Completed)
             {
@@ -414,7 +478,7 @@ namespace RobocopyGui.WinUI
                 else if (raw)
                 {
                     title = "剪切完成（未校验）"; severity = workflow.RemainingSourceFiles > 0 ? InfoBarSeverity.Warning : InfoBarSeverity.Informational;
-                    message = workflow.RemainingSourceFiles > 0 ? "已通过 Robocopy /MOVE 移动文件；" + workflow.RemainingSourceFiles + " 个文件在目标中已相同，被跳过并保留在源文件夹。没有比对文件内容。" : p.ScanFiles + " 个文件已通过 Robocopy /MOVE 移动，源文件已删除；没有比对文件内容。";
+                    message = workflow.RemainingSourceFiles > 0 ? "已通过 Robocopy " + MoveSwitch + " 移动文件；" + workflow.RemainingSourceFiles + " 个文件在目标中已相同，被跳过并保留在源位置。没有比对文件内容。" : p.ScanFiles + " 个文件已通过 Robocopy " + MoveSwitch + " 移动，源文件已删除；没有比对文件内容。";
                 }
                 else if (!o.Verify) { title = "复制完成（未校验）"; message = p.ScanFiles + " 个文件已复制。已关闭哈希校验，没有比对文件内容。"; }
                 else if (p.HashFailed > 0) { title = "任务完成，但有异常文件"; message = "通过 " + p.HashPassed + "，异常 " + p.HashFailed + "。请在“异常文件”中查看。"; severity = InfoBarSeverity.Warning; }
@@ -423,8 +487,8 @@ namespace RobocopyGui.WinUI
             else if (phase == Phase.Terminated)
             {
                 title = "任务已终止"; severity = InfoBarSeverity.Warning;
-                message = moveHash ? (p.DeleteDone > 0 ? "已删除 " + p.DeleteDone + " 个校验一致的源文件；其余源文件全部保留。" : "源文件夹中的文件没有被删除；已复制到目标位置的文件保留。")
-                    : raw ? "已被 Robocopy /MOVE 移动的文件已从源文件夹删除；其余文件仍保留在源文件夹。"
+                message = moveHash ? (p.DeleteDone > 0 ? "已删除 " + p.DeleteDone + " 个校验一致的源文件；其余源文件全部保留。" : "源文件没有被删除；已复制到目标位置的文件保留。")
+                    : raw ? "已被 Robocopy " + MoveSwitch + " 移动的文件已从源位置删除；其余文件仍保留。"
                     : "已复制的文件保留在目标位置，源文件没有任何改动。重新开始时会跳过已完整复制的文件。";
             }
             else { title = "任务失败"; message = failureMessage; severity = InfoBarSeverity.Error; }
@@ -437,14 +501,14 @@ namespace RobocopyGui.WinUI
             switch (phase)
             {
                 case Phase.Idle:
-                    if (!hasSource || !hasDest) text = "请选择源文件夹和目标文件夹";
-                    else if (o.Mode == TransferMode.Move) { text = raw ? "准备就绪 · /MOVE 模式，开始前会再次确认" : "准备就绪 · 剪切模式，开始前会再次确认"; if (raw) { glyph = GlyphWarning; brush = "SystemFillColorCautionBrush"; } }
+                    if (!hasSource || !hasDest) text = "请选择源（文件夹或文件）和目标文件夹";
+                    else if (o.Mode == TransferMode.Move) { text = raw ? "准备就绪 · " + MoveSwitch + " 模式，开始前会再次确认" : "准备就绪 · 剪切模式，开始前会再次确认"; if (raw) { glyph = GlyphWarning; brush = "SystemFillColorCautionBrush"; } }
                     else text = o.Verify ? "准备就绪 · 点击“开始”运行 Robocopy" : "准备就绪 · 将跳过哈希校验";
                     break;
                 case Phase.Running:
                     brush = "AccentTextFillColorPrimaryBrush";
-                    if (stage == WorkflowStage.Scanning) { glyph = GlyphSearch; text = "正在扫描源文件夹 · 已发现 " + p.ScanFiles + " 个文件"; }
-                    else if (stage == WorkflowStage.Copying) { glyph = raw ? GlyphCut : GlyphCopy; text = p.CopyTotal == 0 ? "无需复制，文件已匹配" : (raw ? "Robocopy /MOVE 正在移动 · " : "Robocopy 正在复制 · ") + Format.Bytes(p.CopyDone) + " / " + Format.Bytes(p.CopyTotal); }
+                    if (stage == WorkflowStage.Scanning) { glyph = GlyphSearch; text = "正在扫描" + KindName + " · 已发现 " + p.ScanFiles + " 个文件"; }
+                    else if (stage == WorkflowStage.Copying) { glyph = raw ? GlyphCut : GlyphCopy; text = p.CopyTotal == 0 ? "无需复制，文件已匹配" : (raw ? "Robocopy " + MoveSwitch + " 正在移动 · " : "Robocopy 正在复制 · ") + Format.Bytes(p.CopyDone) + " / " + Format.Bytes(p.CopyTotal); }
                     else if (stage == WorkflowStage.Verifying) { glyph = GlyphShield; text = "正在计算哈希 · 通过 " + p.HashPassed + " · 异常 " + p.HashFailed; }
                     else if (stage == WorkflowStage.DeletingSource) { glyph = GlyphCut; text = "正在删除源文件 · " + p.DeleteDone + " / " + p.DeleteTotal; }
                     else text = "正在收尾…";

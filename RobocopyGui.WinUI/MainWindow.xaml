@@ -92,19 +92,34 @@
                                     <Border Padding="16" Style="{StaticResource CardBorder}">
                                         <StackPanel Spacing="14">
                                             <StackPanel Spacing="8">
-                                                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="源文件夹" />
+                                                <TextBlock Style="{StaticResource BodyTextBlockStyle}" Text="源（文件夹或文件）" />
                                                 <Grid ColumnSpacing="8">
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="*" />
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
-                                                    <TextBox x:Name="SourceBox" PlaceholderText="选择源文件夹，或把文件夹拖到这里" TextChanged="Input_Changed" />
-                                                    <Button x:Name="BrowseSource" Grid.Column="1" Click="BrowseSource_Click">
+                                                    <TextBox x:Name="SourceBox" PlaceholderText="选择源文件夹或文件，也可以直接拖到这里" TextChanged="Input_Changed" />
+                                                    <!-- Click picks a folder (the common case); the arrow offers a single file. -->
+                                                    <SplitButton x:Name="BrowseSource" Grid.Column="1" AutomationProperties.Name="浏览源文件夹" Click="BrowseSource_Click">
                                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                                             <FontIcon FontSize="16" Glyph="&#xE838;" />
                                                             <TextBlock Text="浏览…" />
                                                         </StackPanel>
-                                                    </Button>
+                                                        <SplitButton.Flyout>
+                                                            <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                                                <MenuFlyoutItem Click="PickSourceFolder_Click" Text="选择文件夹…">
+                                                                    <MenuFlyoutItem.Icon>
+                                                                        <FontIcon Glyph="&#xE838;" />
+                                                                    </MenuFlyoutItem.Icon>
+                                                                </MenuFlyoutItem>
+                                                                <MenuFlyoutItem Click="PickSourceFile_Click" Text="选择文件…">
+                                                                    <MenuFlyoutItem.Icon>
+                                                                        <FontIcon Glyph="&#xE8A5;" />
+                                                                    </MenuFlyoutItem.Icon>
+                                                                </MenuFlyoutItem>
+                                                            </MenuFlyout>
+                                                        </SplitButton.Flyout>
+                                                    </SplitButton>
                                                 </Grid>
                                             </StackPanel>
                                             <StackPanel Spacing="8">
@@ -123,10 +138,15 @@
                                                     </Button>
                                                 </Grid>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Spacing="6">
-                                                <FontIcon x:Name="HintIcon" FontSize="14" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Glyph="&#xE8F4;" />
-                                                <TextBlock x:Name="HintText" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" />
-                                            </StackPanel>
+                                            <!-- Shows where the chosen folder or file will end up; long paths wrap instead of running off the card. -->
+                                            <Grid ColumnSpacing="6">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <FontIcon x:Name="HintIcon" VerticalAlignment="Top" Margin="0,2,0,0" FontSize="14" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Glyph="&#xE8F4;" />
+                                                <TextBlock x:Name="HintText" Grid.Column="1" Foreground="{ThemeResource TextFillColorTertiaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" />
+                                            </Grid>
                                         </StackPanel>
                                     </Border>
                                     <!-- Drop overlay: only the source location accepts drops -->
@@ -136,8 +156,8 @@
                                         <Rectangle RadiusX="4" RadiusY="4" Stroke="{ThemeResource AccentFillColorDefaultBrush}" StrokeDashArray="3,2" StrokeThickness="2" />
                                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
                                             <FontIcon FontSize="32" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" Glyph="&#xE8F4;" />
-                                            <TextBlock HorizontalAlignment="Center" Style="{StaticResource BodyStrongTextBlockStyle}" Text="松开鼠标，设为源文件夹" />
-                                            <TextBlock HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="只有源位置支持拖放；目标文件夹请点击“浏览…”选择。" />
+                                            <TextBlock HorizontalAlignment="Center" Style="{StaticResource BodyStrongTextBlockStyle}" Text="松开鼠标，设为源" />
+                                            <TextBlock HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Style="{StaticResource CaptionTextBlockStyle}" Text="可以是一个文件夹或一个文件；目标文件夹请点击“浏览…”选择。" />
                                         </StackPanel>
                                     </Grid>
                                 </Grid>
