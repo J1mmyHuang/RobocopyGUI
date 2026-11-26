@@ -1,7 +1,7 @@
 name: Auto-assign issues
 on:
   issues:
-    types: [opened, transferred]
+    types: [opened]
 jobs:
   assign:
     runs-on: ubuntu-latest
