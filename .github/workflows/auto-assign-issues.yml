@@ -1,0 +1,22 @@
+name: Auto-assign issues
+on:
+  issues:
+    types: [opened]
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Assign to repo owner
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const issue = context.payload.issue;
+            if (issue.assignees && issue.assignees.length > 0) { return; }
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              assignees: [context.repo.owner]
+            });
